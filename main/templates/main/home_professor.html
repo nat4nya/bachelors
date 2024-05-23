@@ -1,16 +1,39 @@
 {% extends 'main/base.html' %}
 {% block title %} Professor Home {% endblock %}
 {% block content %}
-<h1> This is the professor home </h1>
-<form>
-  <div class="mb-3">
-    <label for="subjectSelect" class="form-label">Select Subject:</label>
-    <select class="form-select" id="subjectSelect" name="subject">
-      <option value="subject_a">Subject A</option>
-      <option value="subject_b">Subject B</option>
-      <option value="subject_c">Subject C</option>
-    </select>
-  </div>
-  <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+
+<h2>Accepted Notes</h2>
+<ul>
+  {% for note in notes_received %}
+    {% if note.is_accepted %}
+    <li>
+      <strong>Student:</strong> {{ note.author.username }}<br>
+      <strong>Title:</strong> {{ note.title }}<br>
+      <strong>Description:</strong> {{ note.description }}
+    </li>
+    {% endif %}
+  {% endfor %}
+</ul>
+
+<h2>Pending Notes</h2>
+<ul>
+  {% for note in notes_received %}
+    {% if not note.is_accepted %}
+    <li>
+      <strong>Student:</strong> {{ note.author.username }}<br>
+      <strong>Title:</strong> {{ note.title }}<br>
+      <strong>Description:</strong> {{ note.description }}<br>
+      <form action="{% url 'accept_note' note.id %}" method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">Accept</button>
+      </form>
+      <form action="{% url 'reject_note' note.id %}" method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Reject</button>
+      </form>
+    </li>
+    {% endif %}
+  {% endfor %}
+</ul>
+
 {% endblock %}
