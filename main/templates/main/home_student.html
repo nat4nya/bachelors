@@ -1,0 +1,16 @@
+{% extends 'main/base.html' %}
+{% block title %} Student Home {% endblock %}
+{% block content %}
+<h1> This is the student home </h1>
+<form>
+  <div class="mb-3">
+    <label for="subjectSelect" class="form-label">Select Subject:</label>
+    <select class="form-select" id="subjectSelect" name="subject">
+      <option value="subject_a">Subject A</option>
+      <option value="subject_b">Subject B</option>
+      <option value="subject_c">Subject C</option>
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}
