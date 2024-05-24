@@ -10,10 +10,16 @@ from django.contrib.auth.models import User, Group
 from .models import Note
 
 
+
+
+
+# pagina principala
 @logout_required()
 def main(request):
     return render(request, 'main/main.html')
 
+# LOGIN, REGISTER, LOGOUT
+# creare useri si separarea lor pe grupuri
 class CustomLoginView(LoginView):
     def get_success_url(self):
         user = self.request.user
@@ -24,25 +30,54 @@ class CustomLoginView(LoginView):
         elif user.groups.filter(name='professor').exists():
             return reverse('home_professor')
 
+# logout
+@login_required(login_url = "/login")
+def log_out(request):
+    logout(request)
+    return redirect("/login/")
+
+# inregistrare
+def sign_up(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('/main')
+    else:
+        form = RegisterForm()
+    return render(request, 'registration/sign_up.html', {"form": form})
+
+
+
+
+
+# PAGINI PRINCIPALE
+# pagina principala a studentului
 @login_required(login_url='/login')
 @group_required('student')
 def home_student(request):
     notes_sent = Note.objects.filter(author=request.user)
-
     professors = User.objects.filter(groups__name='professor')
     return render(request, 'main/home_student.html', {'professors': professors, 'notes_sent': notes_sent})
 
+# pagina principala a profesorului
 @login_required(login_url='/login')
 @group_required('professor')
 def home_professor(request):
-    # Get the current professor user
     professor = request.user
-
-    # Retrieve the notes received by the professor
     notes_received = Note.objects.filter(destination=professor)
-
     return render(request, "main/home_professor.html", {'notes_received': notes_received})
 
+# pagina principala a secretarei
+@login_required(login_url='/login')
+@group_required('secretary')
+def home_secretary(request):
+    secretary_department_group = request.user.groups.exclude(name='secretary').first()
+    professors = User.objects.filter(groups__name='professor').filter(groups=secretary_department_group)
+    accepted_notes = Note.objects.filter(destination__in=professors, is_accepted=True)
+
+    return render(request, "main/home_secretary.html", {'professors': professors, 'accepted_notes': accepted_notes})
 def accept_note(request, note_id):
     if request.method == 'POST':
         note = Note.objects.get(pk=note_id)
@@ -57,25 +92,10 @@ def reject_note(request, note_id):
 
 
 
-@login_required(login_url='/login')
-@group_required('secretary')
-def home_secretary(request):
-    # Get the secretary's department group
-    secretary_department_group = request.user.groups.exclude(name='secretary').first()
 
-    # Filter professors based on the secretary's department group
-    professors = User.objects.filter(groups__name='professor').filter(groups=secretary_department_group)
 
-    # Get all accepted notes for the professors in the secretary's department
-    accepted_notes = Note.objects.filter(destination__in=professors, is_accepted=True)
-
-    return render(request, "main/home_secretary.html", {'professors': professors, 'accepted_notes': accepted_notes})
-
-@login_required(login_url = "/login")
-def log_out(request):
-    logout(request)
-    return redirect("/login/")
-
+# CERERI DE LICENTA/DISERATIE
+# crearea cererii
 @login_required(login_url='/login')
 @group_required('student')
 def create_note(request):
@@ -111,15 +131,6 @@ def create_note(request):
     return render(request, 'main/create_note.html', {"form": form, "professors": same_dep_professors})
 
 
-def sign_up(request):
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('/main')
-    else:
-        form = RegisterForm()
 
-    return render(request, 'registration/sign_up.html', {"form": form})
+
 
