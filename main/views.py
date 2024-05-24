@@ -55,20 +55,39 @@ def reject_note(request, note_id):
         note.delete()
     return redirect('home_professor')  # Redirect back to the professor's home page
 
+
+
 @login_required(login_url='/login')
 @group_required('secretary')
 def home_secretary(request):
-    # Fetch all professors and their accepted notes
-    professors = User.objects.filter(groups__name='professor').prefetch_related('received_notes')
-    return render(request, "main/home_secretary.html", {'professors': professors})
+    # Get the secretary's department group
+    secretary_department_group = request.user.groups.exclude(name='secretary').first()
+
+    # Filter professors based on the secretary's department group
+    professors = User.objects.filter(groups__name='professor').filter(groups=secretary_department_group)
+
+    # Get all accepted notes for the professors in the secretary's department
+    accepted_notes = Note.objects.filter(destination__in=professors, is_accepted=True)
+
+    return render(request, "main/home_secretary.html", {'professors': professors, 'accepted_notes': accepted_notes})
 
 @login_required(login_url = "/login")
 def log_out(request):
     logout(request)
     return redirect("/login/")
 
-
+@login_required(login_url='/login')
+@group_required('student')
 def create_note(request):
+    user_department_group = request.user.groups.exclude(name='student').first()
+    professors = User.objects.filter(groups__name='professor')
+    same_dep_professors = []
+
+    for professor in professors:
+        second_group = professor.groups.exclude(name='professor').first()
+        if second_group == user_department_group:
+            same_dep_professors.append(professor)
+
     if request.method == 'POST':
         form = NoteForm(request.POST)
         if form.is_valid():
@@ -89,9 +108,8 @@ def create_note(request):
     else:
         form = NoteForm()
     
-    professors = User.objects.filter(groups__name='professor')
-    
-    return render(request, 'main/create_note.html', {"form": form, "professors": professors})
+    return render(request, 'main/create_note.html', {"form": form, "professors": same_dep_professors})
+
 
 def sign_up(request):
     if request.method == 'POST':

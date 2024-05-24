@@ -5,8 +5,8 @@
 <form method="post">
     {% csrf_token %}
     <div class="mb-3">
-        <label for="professorSelect" class="form-label">Select Professor:</label>
-        <select class="form-select" id="professorSelect" name="destination">
+        <label for="destination" class="form-label">Select Professor:</label>
+        <select class="form-select" id="destination" name="destination">
             {% for professor in professors %}
             <option value="{{ professor.id }}">{{ professor.username }}</option>
             {% endfor %}
