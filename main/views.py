@@ -57,9 +57,11 @@ def sign_up(request):
 @login_required(login_url='/login')
 @group_required('student')
 def home_student(request):
-    notes_sent = Note.objects.filter(author=request.user)
-    professors = User.objects.filter(groups__name='professor')
-    return render(request, 'main/home_student.html', {'professors': professors, 'notes_sent': notes_sent})
+    accepted_request = Note.objects.filter(author=request.user, is_accepted=True).exists()
+    if accepted_request:
+        return redirect('home_student_accepted')
+    else:
+        return redirect('home_student')
 
 # pagina principala a profesorului
 @login_required(login_url='/login')
@@ -124,3 +126,10 @@ def create_note(request):
         form = NoteForm(request=request)
 
     return render(request, 'main/create_note.html', {"form": form, "professors": same_dep_professors})
+
+@login_required(login_url='/login')
+@group_required('student')
+def home_student_accepted(request):
+    # Retrieve accepted requests for the current student
+    accepted_note = Note.objects.filter(author=request.user, is_accepted=True)
+    return render(request, 'notes/accepted.html', {'accepted_notes': accepted_note})
