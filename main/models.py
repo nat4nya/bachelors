@@ -10,4 +10,4 @@ class Note(models.Model):
     is_accepted = models.BooleanField(default=False) 
 
     def __str__(self):
-        return f"Note from {self.author} to {self.destination}: {self.title}"
+        return f"Cerere de la {self.author} adresata lui {self.destination}: {self.title}"

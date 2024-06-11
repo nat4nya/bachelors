@@ -5,7 +5,7 @@
 <form method="post">
     {% csrf_token %}
     <div class="mb-3">
-        <label for="destination" class="form-label">Select Professor:</label>
+        <label for="destination" class="form-label">Selecteaza profesorul:</label>
         <select class="form-select" id="destination" name="destination">
             {% for professor in professors %}
             <option value="{{ professor.id }}">{{ professor.username }}</option>
@@ -13,6 +13,15 @@
         </select>
     </div>
     {{ form|crispy }}
+    <div class="mb-3">
+        {% if form.errors.destination %}
+            <div class="alert alert-danger mt-3">
+                {% for error in form.errors.destination %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
     <button type="submit" class="btn btn-success">Send</button>
 </form>
 {% endblock %}

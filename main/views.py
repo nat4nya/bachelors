@@ -1,20 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, NoteForm
 from django.urls import reverse
-from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView
 from .decorators import group_required, logout_required
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from .models import Note
+from django.contrib import messages
 
 
 
 
 
 # pagina principala
-@logout_required()
 def main(request):
     return render(request, 'main/main.html')
 
@@ -37,6 +36,7 @@ def log_out(request):
     return redirect("/login/")
 
 # inregistrare
+@logout_required()
 def sign_up(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -101,36 +101,26 @@ def reject_note(request, note_id):
 def create_note(request):
     user_department_group = request.user.groups.exclude(name='student').first()
     professors = User.objects.filter(groups__name='professor')
-    same_dep_professors = []
-
-    for professor in professors:
-        second_group = professor.groups.exclude(name='professor').first()
-        if second_group == user_department_group:
-            same_dep_professors.append(professor)
+    same_dep_professors = [prof for prof in professors if prof.groups.exclude(name='professor').first() == user_department_group]
 
     if request.method == 'POST':
-        form = NoteForm(request.POST)
+        form = NoteForm(request.POST, request=request)
         if form.is_valid():
-            note = form.save(commit=False)
-            note.author = request.user
-            
-            # Check if professor ID is provided and valid
             professor_id = request.POST.get('destination')
             if professor_id:
                 professor = get_object_or_404(User, id=professor_id)
+                author = request.user
+                
+                # Check if the maximum limit for sending requests to a professor has been reached
+                if Note.objects.filter(author=author, destination=professor).count() >= 5:
+                    return redirect("create_note")  # Redirect back to the create_note page if the limit is reached
+                
+                note = form.save(commit=False)
+                note.author = author
                 note.destination = professor
                 note.save()
                 return redirect("/home-student")
-            else:
-                # Handle case where professor ID is not provided
-                # You can display an error message or redirect the user to an appropriate page
-                pass
     else:
-        form = NoteForm()
-    
+        form = NoteForm(request=request)
+
     return render(request, 'main/create_note.html', {"form": form, "professors": same_dep_professors})
-
-
-
-
-

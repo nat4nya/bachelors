@@ -23,7 +23,7 @@ def logout_required(redirect_url=None):
                 elif request.user.groups.filter(name='professor').exists():
                     return redirect('/home-professor')
                 elif request.user.groups.filter(name='secretary').exists():
-                    return redirect('/home-secretary')
+                    return redirect('/home-secretary')  
             return view_function(request, *args, **kwargs)
         return _wrapped_view
     return decorator
