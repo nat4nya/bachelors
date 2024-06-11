@@ -15,4 +15,45 @@
     </div>
   </div>
 </div>
+
+<!-- Notifications -->
+<div class="container mt-5">
+  <button class="btn btn-primary mb-3" id="notificationButton">Notifications</button>
+  <div id="notificationList" class="card" style="display: none;">
+    <div class="card-header">
+      Rejected requests
+    </div>
+    <div class="card-body">
+      <ul class="list-group list-group-flush">
+        {% if notifications %}
+          {% for notification in notifications %}
+            <li class="list-group-item">
+              <strong>Professor:</strong> {{ notification.note.destination.username }}<br>
+              <strong>Note Title:</strong> {{ notification.note.title }}<br>
+              <strong>Date Created:</strong> {{ notification.note.created_at }}<br>
+              {% if notification.reason %}
+                <strong>Reason:</strong> {{ notification.reason }}<br>
+              {% endif %}
+            </li>
+          {% endfor %}
+        {% else %}
+          <li class="list-group-item">You have no notifications!</li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<script>
+document.getElementById("notificationButton").addEventListener("click", function() {
+  var notificationList = document.getElementById("notificationList");
+  if (notificationList.style.display === "none") {
+    notificationList.style.display = "block";
+  } else {
+    notificationList.style.display = "none";
+  }
+});
+</script>
+
 {% endblock %}

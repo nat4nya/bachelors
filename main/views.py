@@ -8,7 +8,10 @@ from .decorators import group_required, logout_required
 from django.contrib.auth.models import User
 from .models import Note
 from django.contrib import messages
-
+from .models import Notification
+from django.http import HttpResponseRedirect
+import logging
+logger = logging.getLogger(__name__)
 
 
 
@@ -24,9 +27,9 @@ class CustomLoginView(LoginView):
         user = self.request.user
         if user.groups.filter(name='student').exists():
             return reverse('home_student')
-        elif user.groups.filter(name='secretary').exists():
+        elif user.groups.filter(name='secretar').exists():
             return reverse('home_secretary')
-        elif user.groups.filter(name='professor').exists():
+        elif user.groups.filter(name='profesor').exists():
             return reverse('home_professor')
 
 # logout
@@ -58,27 +61,57 @@ def sign_up(request):
 @group_required('student')
 def home_student(request):
     accepted_request = Note.objects.filter(author=request.user, is_accepted=True).exists()
+    notifications = Notification.objects.filter(note__author=request.user)
     if accepted_request:
         return redirect('home_student_accepted')
     else:
         notes_sent = Note.objects.filter(author=request.user, is_refused=False)
-        return render(request, 'main/home_student.html', {'notes_sent': notes_sent})
+        return render(request, 'main/home_student.html', {'notes_sent': notes_sent, 'notifications': notifications})
 
 # pagina principala a profesorului
 @login_required(login_url='/login')
-@group_required('professor')
+@group_required('profesor')
 def home_professor(request):
     professor = request.user
-    # Filter out refused notes
-    notes_received = Note.objects.filter(destination=professor, is_refused=False)
+    notes_received = Note.objects.filter(destination=professor, is_refused=False).select_related('author')
+    
+    if request.method == 'POST':
+        form = request.POST
+        note_id = request.GET.get('note_id')
+        reason = form.get('reason')
+        
+        print("note_id:", note_id)
+        print("reason:", reason)
+
+        if note_id and reason:
+            try:
+                # Get the note and mark it as refused
+                note = get_object_or_404(Note, pk=note_id)
+                note.is_refused = True
+                note.save()
+
+                # Create a notification for the student
+                Notification.objects.create(note=note, reason=reason)
+                
+                # Redirect back to the professor's home page
+                return HttpResponseRedirect(reverse('home_professor'))
+            except Exception as e:
+                # Log any exceptions that occur
+                logger.exception("An error occurred while processing the rejection request.")
+                # Optionally, display an error message to the user
+                messages.error(request, "An error occurred while processing the rejection request. Please try again.")
+                # Redirect back to the professor's home page
+                return HttpResponseRedirect(reverse('home_professor'))
+
     return render(request, "main/home_professor.html", {'notes_received': notes_received})
+
 
 # pagina principala a secretarei
 @login_required(login_url='/login')
-@group_required('secretary')
+@group_required('secretar')
 def home_secretary(request):
-    secretary_department_group = request.user.groups.exclude(name='secretary').first()
-    professors = User.objects.filter(groups__name='professor').filter(groups=secretary_department_group)
+    secretary_department_group = request.user.groups.exclude(name='secretar').first()
+    professors = User.objects.filter(groups__name='profesor').filter(groups=secretary_department_group)
     accepted_notes = Note.objects.filter(destination__in=professors, is_accepted=True)
 
     return render(request, "main/home_secretary.html", {'professors': professors, 'accepted_notes': accepted_notes})
@@ -99,8 +132,8 @@ def accept_note(request, note_id):
 @group_required('student')
 def create_note(request):
     user_department_group = request.user.groups.exclude(name='student').first()
-    professors = User.objects.filter(groups__name='professor')
-    same_dep_professors = [prof for prof in professors if prof.groups.exclude(name='professor').first() == user_department_group]
+    professors = User.objects.filter(groups__name='profesor')
+    same_dep_professors = [prof for prof in professors if prof.groups.exclude(name='profesor').first() == user_department_group]
 
     if request.method == 'POST':
         form = NoteForm(request.POST, request=request)
@@ -111,28 +144,50 @@ def create_note(request):
                 author = request.user
                 
                 # Check if the maximum limit for sending requests to a professor has been reached
-                if Note.objects.filter(author=author, destination=professor).count() >= 5:
-                    return redirect("create_note")  # Redirect back to the create_note page if the limit is reached
-                
-                note = form.save(commit=False)
-                note.author = author
-                note.destination = professor
-                note.save()
-                return redirect("/home-student")
+                if Note.objects.filter(author=author, destination=professor).count() >= 3:
+                    form_errors = "You have already sent 3 requests to this professor."
+                else:
+                    note = form.save(commit=False)
+                    note.author = author
+                    note.destination = professor
+                    note.save()
+                    return redirect("/home-student")
+        else:
+            form_errors = "Please correct the errors below."
     else:
         form = NoteForm(request=request)
+        form_errors = None
 
-    return render(request, 'notes/create_note.html', {"form": form, "professors": same_dep_professors})
+    return render(request, 'notes/create_note.html', {"form": form, "professors": same_dep_professors, "form_errors": form_errors})
+
+
 
 @login_required(login_url='/login')
 @group_required('student')
 def home_student_accepted(request):
     accepted_note = Note.objects.filter(author=request.user, is_accepted=True)
-    return render(request, 'main/accepted_request.html', {'accepted_notes': accepted_note})
+    return render(request, 'notes/accepted.html', {'accepted_notes': accepted_note})
 
+@login_required
 def refuse_note(request, note_id):
     if request.method == 'POST':
-        note = Note.objects.get(pk=note_id)
-        note.is_refused = True
-        note.save()
-    return redirect('home_professor')  # Redirect back to the professor's home page
+        note_id = request.POST.get('note_id')
+        reason = request.POST.get('reason', '')
+
+        if note_id:
+            try:
+                # Get the note and mark it as refused
+                note = Note.objects.get(pk=note_id)
+                note.is_refused = True
+                note.save()
+
+                # Create a notification for the student
+                Notification.objects.create(note=note, reason=reason)
+
+                messages.success(request, "Note rejected successfully.")
+            except Note.DoesNotExist:
+                messages.error(request, "Note does not exist.")
+            except Exception as e:
+                messages.error(request, "An error occurred while processing the rejection request. Please try again.")
+
+    return HttpResponseRedirect(reverse('home_professor'))

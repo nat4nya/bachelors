@@ -39,11 +39,19 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main.apps.MainConfig', # de scris
     'crispy_forms', # de scris
-    'crispy_bootstrap5' # de scris
+    'crispy_bootstrap5', # de scris
+    'dbbackup'
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# Specify the storage backend to use for storing the backup files.
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+# Specify the directory where the backup files will be stored.
+DBBACKUP_STORAGE_OPTIONS = {'location': '/backup'}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

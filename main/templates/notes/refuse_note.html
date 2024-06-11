@@ -1,0 +1,27 @@
+{% extends 'main/base.html' %}
+{% block title %} Refuse Note {% endblock %}
+{% block content %}
+
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Why do you want to reject the request?</h2>
+        </div>
+        <div class="card-body">
+          <form action="{% url 'refuse_note' note_id=note_id %}" method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="reason" class="form-label">Reason for rejection</label>
+              <textarea class="form-control" id="reason" name="reason" rows="4" placeholder="Enter your reason here..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

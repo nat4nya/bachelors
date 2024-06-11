@@ -2,6 +2,30 @@
 {% block title %} Professor Home {% endblock %}
 {% block content %}
 
+<!-- Modal for confirmation -->
+<div class="modal fade" id="confirmRejectModal" tabindex="-1" aria-labelledby="confirmRejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmRejectModalLabel">Confirm Rejection</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label for="reason">Reason for rejection:</label>
+        <textarea class="form-control" id="reason" name="reason" rows="4" placeholder="Enter your reason here..." required></textarea>
+        <!-- Hidden input field to store the note ID -->
+        <input type="hidden" id="refuseNoteId" name="note_id">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <!-- Yes, Reject button -->
+        <button type="submit" class="btn btn-danger">Yes, Reject</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <h2>Cereri acceptate</h2>
 <ul>
   {% for note in notes_received %}
@@ -23,17 +47,103 @@
       <strong>Student:</strong> {{ note.author.username }}<br>
       <strong>Titlul lucrarii:</strong> {{ note.title }}<br>
       <strong>Descrierea lucrarii:</strong> {{ note.description }}<br>
-      <form action="{% url 'accept_note' note.id %}" method="post" style="display: inline;">
+      <!-- Accept button -->
+      <form id="acceptForm_{{ note.id }}" action="{% url 'accept_note' note.id %}" method="post" style="display: inline;">
         {% csrf_token %}
-        <button type="submit" class="btn btn-success">Accepta</button>
+        <button type="submit" class="btn btn-success">Accept</button>
       </form>
-      <form action="{% url 'refuse_note' note.id %}" method="post" style="display: inline;">
+      <!-- Refuse button form -->
+      <form id="refuseForm_{{ note.id }}" action="{% url 'refuse_note' note.id %}" method="post" style="display: inline;">
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Refuza</button>
+        <input type="hidden" name="note_id" value="{{ note.id }}">
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmRejectModal_{{ note.id }}">Refuse</button>
+        <!-- Modal -->
+        <div class="modal fade" id="confirmRejectModal_{{ note.id }}" tabindex="-1" aria-labelledby="confirmRejectModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="confirmRejectModalLabel">Confirm rejection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <label for="reason">Reason for rejection:</label>
+                <textarea class="form-control" id="reason" name="reason" rows="4" placeholder="Enter your reason here..." required></textarea>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <!-- Yes, Reject button -->
+                <button type="submit" class="btn btn-danger">Yes, Reject</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </form>
     </li>
     {% endif %}
   {% endfor %}
 </ul>
+
+<script>
+  // JavaScript to handle refusal process
+  document.addEventListener('DOMContentLoaded', function() {
+    let noteIdToReject = null;
+
+    // Get all the refusal buttons
+    const refuseButtons = document.querySelectorAll('.refuse-btn');
+    
+    // Attach click event listener to each button
+    refuseButtons.forEach(function(button) {
+      button.addEventListener('click', function() {
+        // Get the note ID from the button's data-note-id attribute
+        noteIdToReject = button.getAttribute('data-note-id');
+      });
+    });
+
+    // Attach click event listener to the "Yes, Reject" button
+    const rejectButton = document.getElementById('rejectButton');
+    rejectButton.addEventListener('click', function() {
+      // Get the reason for rejection
+      const reason = document.getElementById('reason').value;
+
+      // Ensure we have a note ID and a reason before sending the request
+      if (noteIdToReject && reason) {
+        // Create a FormData object to send the data
+        const formData = new FormData();
+        formData.append('note_id', noteIdToReject);
+        formData.append('reason', reason);
+
+        // Send the request to the server
+        fetch('/home-professor', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}' // Ensure CSRF token is included
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            // Optionally, display a success message to the user
+            alert('Note rejected successfully.');
+            // Redirect to the professor's home page
+            window.location.href = '/home-professor';
+          } else {
+            // Optionally, display an error message to the user
+            alert('An error occurred while processing the rejection request. Please try again.');
+          }
+        })
+        .catch(error => {
+          // Log any errors that occur
+          console.error('Error:', error);
+          // Optionally, display an error message to the user
+          alert('An error occurred while processing the rejection request. Please try again.');
+        });
+      } else {
+        // Optionally, display an error message to the user if noteIdToReject or reason is missing
+        alert('Please select a reason for rejection.');
+      }
+    });
+  });
+</script>
+
 
 {% endblock %}
