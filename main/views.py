@@ -61,14 +61,16 @@ def home_student(request):
     if accepted_request:
         return redirect('home_student_accepted')
     else:
-        return redirect('home_student')
+        notes_sent = Note.objects.filter(author=request.user, is_refused=False)
+        return render(request, 'main/home_student.html', {'notes_sent': notes_sent})
 
 # pagina principala a profesorului
 @login_required(login_url='/login')
 @group_required('professor')
 def home_professor(request):
     professor = request.user
-    notes_received = Note.objects.filter(destination=professor)
+    # Filter out refused notes
+    notes_received = Note.objects.filter(destination=professor, is_refused=False)
     return render(request, "main/home_professor.html", {'notes_received': notes_received})
 
 # pagina principala a secretarei
@@ -85,11 +87,6 @@ def accept_note(request, note_id):
         note = Note.objects.get(pk=note_id)
         note.is_accepted = True
         note.save()
-    return redirect('home_professor')  # Redirect back to the professor's home page
-def reject_note(request, note_id):
-    if request.method == 'POST':
-        note = get_object_or_404(Note, pk=note_id)
-        note.delete()
     return redirect('home_professor')  # Redirect back to the professor's home page
 
 
@@ -125,11 +122,17 @@ def create_note(request):
     else:
         form = NoteForm(request=request)
 
-    return render(request, 'main/create_note.html', {"form": form, "professors": same_dep_professors})
+    return render(request, 'notes/create_note.html', {"form": form, "professors": same_dep_professors})
 
 @login_required(login_url='/login')
 @group_required('student')
 def home_student_accepted(request):
-    # Retrieve accepted requests for the current student
     accepted_note = Note.objects.filter(author=request.user, is_accepted=True)
-    return render(request, 'notes/accepted.html', {'accepted_notes': accepted_note})
+    return render(request, 'main/accepted_request.html', {'accepted_notes': accepted_note})
+
+def refuse_note(request, note_id):
+    if request.method == 'POST':
+        note = Note.objects.get(pk=note_id)
+        note.is_refused = True
+        note.save()
+    return redirect('home_professor')  # Redirect back to the professor's home page
