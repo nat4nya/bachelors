@@ -1,4 +1,4 @@
-{% extends 'main/base.html' %}
+{% extends 'main/base_home.html' %}
 {% block title %} Pagina principala a studentului {% endblock %}
 {% block content %}
 <div class="container">
@@ -18,11 +18,8 @@
 
 <!-- Notifications -->
 <div class="container mt-5">
-  <button class="btn btn-primary mb-3" id="notificationButton">Notifications</button>
+  <button class="btn btn-primary mb-3" id="notificationButton">Cereri refuzate</button>
   <div id="notificationList" class="card" style="display: none;">
-    <div class="card-header">
-      Rejected requests
-    </div>
     <div class="card-body">
       <ul class="list-group list-group-flush">
         {% if notifications %}

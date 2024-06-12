@@ -18,11 +18,19 @@ logger = logging.getLogger(__name__)
 
 # pagina principala
 def main(request):
-    return render(request, 'main/main.html')
+    page_name = "Pagina principală"
+    return render(request, 'unauthenticated/main.html', {'page_name': page_name})
 
 # LOGIN, REGISTER, LOGOUT
 # creare useri si separarea lor pe grupuri
 class CustomLoginView(LoginView):
+    template_name = 'unauthenticated/login.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_name'] = "Autentificare"  # Set the page name here
+        return context
+
     def get_success_url(self):
         user = self.request.user
         if user.groups.filter(name='student').exists():
@@ -36,11 +44,12 @@ class CustomLoginView(LoginView):
 @login_required(login_url = "/login")
 def log_out(request):
     logout(request)
-    return redirect("/login/")
+    return redirect("/")
 
 # inregistrare
 @logout_required()
 def sign_up(request):
+    page_name = "Înregistrare"
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -49,7 +58,7 @@ def sign_up(request):
             return redirect('/main')
     else:
         form = RegisterForm()
-    return render(request, 'registration/sign_up.html', {"form": form})
+    return render(request, 'unauthenticated/sign_up.html', {"form": form, "page_name": page_name})
 
 
 
