@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'main.apps.MainConfig', # de scris
     'crispy_forms', # de scris
     'crispy_bootstrap5', # de scris
-    'dbbackup'
+    'dbbackup',
+    'corsheaders'
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -57,13 +58,29 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # Ensure this is included
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# CSRF cookie settings
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = False  # Set to True if using HTTPS
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "https://127.0.0.1:8000",
+]
+
+# CSRF trusted origins
+CSRF_TRUSTED_ORIGINS = [
+    "https://127.0.0.1:8000",
+]
+
 ROOT_URLCONF = 'management.urls'
+
+ALLOWED_HOSTS = ['127.0.0.1']
 
 TEMPLATES = [
     {

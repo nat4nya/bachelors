@@ -2,6 +2,7 @@ from django.http import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from functools import wraps
+from .models import Note  # Import your Note model here
 
 def group_required(group_name):
     def decorator(view_func):
@@ -27,3 +28,12 @@ def logout_required(redirect_url=None):
             return view_function(request, *args, **kwargs)
         return _wrapped_view
     return decorator
+
+def no_accepted_notes_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        # Check if the user has any accepted notes
+        if Note.objects.filter(author=request.user, is_accepted=True).exists():
+            return HttpResponseForbidden("You are not allowed to access this page.")
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view

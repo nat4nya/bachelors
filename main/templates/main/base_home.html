@@ -57,6 +57,17 @@
             padding: 0; /* Remove default padding */
             overflow: hidden; /* Hide scrollbar */
         }
+        .no_request{
+            position: fixed;
+            bottom: 10px; /* Position at the bottom */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Adjust for centering */
+            width: auto; /* Adjust width */
+            max-width: 80%; /* Ensure it doesn't span too wide */
+            padding: 10px; /* Smaller padding */
+            z-index: 1001; /* Ensure it appears above other elements */
+            font-size: 0.875rem; /* Smaller font size */
+        }
     </style>
     <title>{% block title %} Pagina principala {% endblock %}</title>
 </head>
@@ -81,14 +92,15 @@
             {% endif %}
         </div>
     </div>
-    
+
     <div class="container mt-4">
         <div class="panel">
             {% block content %} 
+            {% block no_requests %} {% endblock %}
             {% endblock %}
         </div>
     </div>
-    <div id="fireworks-container"></div> <!-- Container for fireworks animation -->
+
     <div class="black-bar">
         <p class="text-center">Pentru suport sunteti rugati sa trimiteti un e-mail la adresa suport@uab.ro sau sa sunati la unul din urmatoarele numere de telefon: +40764523199, +40274345671</p>
     </div>

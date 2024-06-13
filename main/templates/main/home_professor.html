@@ -1,6 +1,18 @@
 {% extends 'main/base_home.html' %}
 {% block title %} Professor Home {% endblock %}
+
 {% block content %}
+
+{% block no_requests %}
+{% if messages %}
+<div class="alert alert-success alert-dismissible fade show no_request" role="alert">
+  {% for message in messages %}
+    {{ message }}
+  {% endfor %}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+{% endblock %}
 
 <style>
   /* Custom CSS for larger headings */
@@ -9,101 +21,166 @@
   }
 </style>
 
-<!-- Modal for confirmation -->
-<div class="modal fade" id="confirmRejectModal" tabindex="-1" aria-labelledby="confirmRejectModalLabel" aria-hidden="true">
+<div class="m-4">
+  <div class="accordion" id="myAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingOne">
+        <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#collapseOne">Cereri acceptate</button>
+      </h2>
+      <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#myAccordion">
+        <div class="card-body">
+          <ul>
+            {% for note in notes_received %}
+              {% if note.is_accepted %}
+                <li>
+                  <strong>Student:</strong> {{ note.author.username }}<br>
+                  <strong>Titlul lucrarii:</strong> {{ note.title }}<br>
+                  <strong>Descrierea lucrarii:</strong> {{ note.description }}<br>
+                  <strong>Data crearii:</strong> {{ note.created_at }}<br>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingTwo">
+        <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">Cereri in asteptare</button>
+      </h2>
+      <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#myAccordion">
+        <div class="card-body">
+          <ul>
+            {% for note in notes_received %}
+              {% if not note.is_accepted %}
+                <li>
+                  <strong>Student:</strong> {{ note.author.username }}<br>
+                  <strong>Titlul lucrarii:</strong> {{ note.title }}<br>
+                  <strong>Descrierea lucrarii:</strong> {{ note.description }}<br>
+                  <strong>Data crearii:</strong> {{ note.created_at }}<br>
+                  <!-- Accept button -->
+                  <form id="acceptForm_{{ note.id }}" action="{% url 'accept_note' note.id %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Accept</button>
+                  </form>
+                  <!-- Refuse button form -->
+                  <form id="refuseForm_{{ note.id }}" action="{% url 'refuse_note' note.id %}" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="note_id" value="{{ note.id }}">
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmRejectModal_{{ note.id }}">Refuse</button>
+                    <!-- Modal -->
+                    <div class="modal fade" id="confirmRejectModal_{{ note.id }}" tabindex="-1" aria-labelledby="confirmRejectModalLabel" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="confirmRejectModalLabel">Confirm rejection</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <label for="reason_{{ note.id }}">Reason for rejection:</label>
+                            <textarea class="form-control" id="reason_{{ note.id }}" name="reason" rows="4" placeholder="Enter your reason here..." required></textarea>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <!-- Yes, Reject button -->
+                            <button type="submit" class="btn btn-danger">Yes, Reject</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Include Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+{% if show_remove_button %}
+
+<!-- Remove Myself button -->
+<button type="button" class="btn btn-danger position-fixed remove-btn"
+        style="bottom: 60px; right: 15px; border-radius: 10px; z-index: 1001;"
+        data-bs-toggle="modal" data-bs-target="#confirmRemoveModal">
+    Remove Myself
+</button>
+<!-- Modal for Remove Myself -->
+<div class="modal fade" id="confirmRemoveModal" tabindex="-1" aria-labelledby="confirmRemoveModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="confirmRejectModalLabel">Confirm Rejection</h5>
+        <h5 class="modal-title" id="confirmRemoveModalLabel">Confirm Remove Myself</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <label for="reason">Reason for rejection:</label>
-        <textarea class="form-control" id="reason" name="reason" rows="4" placeholder="Enter your reason here..." required></textarea>
-        <!-- Hidden input field to store the note ID -->
-        <input type="hidden" id="refuseNoteId" name="note_id">
+        <p>Are you sure you want to remove yourself from the system? This action cannot be undone.</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <!-- Yes, Reject button -->
-        <button type="submit" class="btn btn-danger" id="rejectButton">Yes, Reject</button>
+        <!-- Form submission -->
+        <form method="post" action="{% url 'remove_myself' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" id="removeMyselfBtn">Yes, Remove Myself</button>
+        </form>
       </div>
     </div>
   </div>
 </div>
 
-<div class="m-4">
-  <div class="accordion" id="myAccordion">
-      <div class="accordion-item">
-          <h2 class="accordion-header" id="headingOne">
-              <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#collapseOne">Cereri acceptate</button>
-          </h2>
-          <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#myAccordion">
-              <div class="card-body">
-                  <ul>
-                    {% for note in notes_received %}
-                      {% if note.is_accepted %}
-                        <li>
-                          <strong>Student:</strong> {{ note.author.username }}<br>
-                          <strong>Titlul lucrarii:</strong> {{ note.title }}<br>
-                          <strong>Descrierea lucrarii:</strong> {{ note.description }}
-                        </li>
-                      {% endif %}
-                    {% endfor %}
-                  </ul>
-              </div>
-          </div>
+{% else %}
+
+<!-- Add Myself button -->
+<button type="button" class="btn btn-success position-fixed add-btn"
+        style="bottom: 60px; right: 15px; border-radius: 10px; z-index: 1001;"
+        data-bs-toggle="modal" data-bs-target="#confirmAddModal">
+    Add Myself
+</button>
+<!-- Modal for Add Myself -->
+<div class="modal fade" id="confirmAddModal" tabindex="-1" aria-labelledby="confirmAddModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmAddModalLabel">Confirm Add Myself</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="accordion-item">
-          <h2 class="accordion-header" id="headingTwo">
-              <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">Cereri in asteptare</button>
-          </h2>
-          <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#myAccordion">
-              <div class="card-body">
-                  <ul>
-                    {% for note in notes_received %}
-                      {% if not note.is_accepted %}
-                        <li>
-                          <strong>Student:</strong> {{ note.author.username }}<br>
-                          <strong>Titlul lucrarii:</strong> {{ note.title }}<br>
-                          <strong>Descrierea lucrarii:</strong> {{ note.description }}<br>
-                          <!-- Accept button -->
-                          <form id="acceptForm_{{ note.id }}" action="{% url 'accept_note' note.id %}" method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-success">Accept</button>
-                          </form>
-                          <!-- Refuse button form -->
-                          <form id="refuseForm_{{ note.id }}" action="{% url 'refuse_note' note.id %}" method="post" style="display: inline;">
-                            {% csrf_token %}
-                            <input type="hidden" name="note_id" value="{{ note.id }}">
-                            <button type="button" class="btn btn-danger refuse-btn" data-bs-toggle="modal" data-bs-target="#confirmRejectModal" data-note-id="{{ note.id }}">Refuse</button>
-                          </form>
-                        </li>
-                      {% endif %}
-                    {% endfor %}
-                  </ul>
-              </div>
-          </div>
+      <div class="modal-body">
+        <p>Are you sure you want to add yourself to the system? This action cannot be undone.</p>
       </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <!-- Form submission -->
+        <form method="post" action="{% url 'add_myself' %}" id="addMyselfForm">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" id="addMyselfBtn">Yes, Add Myself</button>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 
+{% endif %}
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+  // JavaScript to handle refusal process
   document.addEventListener('DOMContentLoaded', function() {
-    const rejectButton = document.getElementById('rejectButton');
-    const reasonInput = document.getElementById('reason');
-    let noteIdToReject = null;
+    const modalForms = document.querySelectorAll('form[id^="refuseForm_"]');
 
-    rejectButton.addEventListener('click', function() {
-      const reason = reasonInput.value;
+    modalForms.forEach(function(form) {
+      form.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form submission
 
-      if (noteIdToReject && reason) {
-        const formData = new FormData();
-        formData.append('note_id', noteIdToReject);
-        formData.append('reason', reason);
+        const formData = new FormData(form);
+        const noteId = formData.get('note_id');
+        const reason = formData.get('reason');
 
-        fetch('/home-professor', {
+        // Send the request to the server
+        fetch(form.action, {
           method: 'POST',
           body: formData,
           headers: {
@@ -112,8 +189,7 @@
         })
         .then(response => {
           if (response.ok) {
-            alert('Note rejected successfully.');
-            window.location.href = '/home-professor';
+            window.location.reload(); // Reload the page or handle UI update as needed
           } else {
             alert('An error occurred while processing the rejection request. Please try again.');
           }
@@ -121,20 +197,19 @@
         .catch(error => {
           console.error('Error:', error);
           alert('An error occurred while processing the rejection request. Please try again.');
+        })
+        .finally(() => {
+          // Close the modal after submission
+          const modal = document.getElementById(`confirmRejectModal_${noteId}`);
+          if (modal) {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+              modalInstance.hide();
+            }
+          }
         });
-      } else {
-        alert('Please select a reason for rejection.');
-      }
-    });
-
-    // JavaScript to handle refusal process
-    const refuseButtons = document.querySelectorAll('.refuse-btn');
-    refuseButtons.forEach(function(button) {
-      button.addEventListener('click', function() {
-        noteIdToReject = button.getAttribute('data-note-id');
       });
     });
   });
 </script>
-
 {% endblock %}

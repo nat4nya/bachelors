@@ -23,4 +23,9 @@ class Notification(models.Model):
     def __str__(self):
         return f"Notification for {self.note.author.username} regarding '{self.note.title}'"
 
+class ProfessorRequest(models.Model):
+    professor = models.OneToOneField(User, on_delete=models.CASCADE)
+    no_requests = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.professor.username
