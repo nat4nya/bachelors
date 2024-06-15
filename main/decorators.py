@@ -37,3 +37,22 @@ def no_accepted_notes_required(view_func):
             return HttpResponseForbidden("You are not allowed to access this page.")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+
+def no_pending_notes_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        # Get all notes for the user
+        user_notes = Note.objects.filter(author=request.user)
+        # Loop through the notes to check if any is accepted
+        is_pending = True
+        for note in user_notes:
+            if note.is_accepted:
+                is_pending = False
+                break
+                
+        if is_pending:
+            return HttpResponseForbidden("You are not allowed to access this page.")
+        # If no accepted notes are found, proceed to the original view
+        return view_func(request, *args, **kwargs)
+    
+    return _wrapped_view

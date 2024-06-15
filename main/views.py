@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, NoteForm
 from django.urls import reverse
 from django.contrib.auth.views import LoginView
-from .decorators import group_required, logout_required, no_accepted_notes_required
+from .decorators import group_required, logout_required, no_accepted_notes_required, no_pending_notes_required
 from django.contrib.auth.models import User
 from .models import Note
 from django.contrib import messages
@@ -202,6 +202,7 @@ def create_note(request):
 
 @login_required(login_url='/login')
 @group_required('student')
+@no_pending_notes_required
 def home_student_accepted(request):
     accepted_note = Note.objects.filter(author=request.user, is_accepted=True)
     return render(request, 'notes/accepted.html', {'accepted_notes': accepted_note})
@@ -230,6 +231,16 @@ def refuse_note(request, note_id):
 
     return HttpResponseRedirect(reverse('home_professor'))
 
+def refuse_all_requests(request):
+    # Get all notes for the current professor where is_accepted is False and is_refused is False
+    notes_to_refuse = Note.objects.filter(destination=request.user, is_accepted=False, is_refused=False)
+    try:
+        # Update all filtered notes to set is_refused = True
+        notes_to_refuse.update(is_refused=True)
+    except Exception as e:
+        messages.error(request, f"There was an error refusing the requests: {str(e)}")
+
+    return redirect('home_professor')
 
 @group_required('profesor')
 @login_required

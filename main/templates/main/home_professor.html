@@ -24,7 +24,7 @@
 <div class="m-4">
   <div class="accordion" id="myAccordion">
     <div class="accordion-item">
-      <h2 class="accordion-header" id="headingOne">
+      <h2 class="accordion-header" id="headingTwo">
         <button type="button" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#collapseOne">Cereri acceptate</button>
       </h2>
       <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#myAccordion">
@@ -45,9 +45,9 @@
       </div>
     </div>
     <div class="accordion-item">
-      <h2 class="accordion-header" id="headingTwo">
+      <h2 class="accordion-header" id="headingThree">
         <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">Cereri in asteptare</button>
-      </h2>
+      </h2>     
       <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#myAccordion">
         <div class="card-body">
           <ul>
@@ -93,6 +93,26 @@
               {% endif %}
             {% endfor %}
           </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Buton de stergere a tuturor cererilor -->
+  <button type="button" class="btn btn-danger my-1" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">Refuză toate cererile</button>
+  <!-- Modal pentru verificarea stergerii tuturor cererilor-->
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+          <p>Sunteți sigur că vreți să refuzați toate cererile? Această acțiune nu este reversibilă.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
+          <!-- Form submission -->
+          <form method="post" action="{% url 'refuse_all_requests' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" id="deleteRequestsBtn">Da, refuză tot</button>
+          </form>
         </div>
       </div>
     </div>

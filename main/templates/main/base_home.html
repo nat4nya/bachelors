@@ -94,12 +94,13 @@
     </div>
 
     <div class="container mt-4">
-        <div class="panel">
-            {% block content %} 
+        <div class="panel" style="max-height: 820px; overflow-y: auto;">
+          {% block content %} 
             {% block no_requests %} {% endblock %}
-            {% endblock %}
+          {% endblock %}
         </div>
-    </div>
+      </div>
+      
 
     <div class="black-bar">
         <p class="text-center">Pentru suport sunteti rugati sa trimiteti un e-mail la adresa suport@uab.ro sau sa sunati la unul din urmatoarele numere de telefon: +40764523199, +40274345671</p>
