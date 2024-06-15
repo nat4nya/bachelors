@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, NoteForm
 from django.urls import reverse
@@ -11,17 +11,31 @@ from django.contrib import messages
 from .models import Notification, ProfessorRequest
 from django.http import HttpResponseRedirect
 import logging
+from .tokens import account_activation_token
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import EmailMessage
+
+
 logger = logging.getLogger(__name__)
-
-
 
 
 # pagina principala
 @logout_required()
 def main(request):
     page_name = "Pagina principală"
-    return render(request, 'unauthenticated/main.html', {'page_name': page_name})
 
+    message = request.session.pop('message', None)
+    print("Message received:", message)
+
+    if message == 'verification_sent':
+        messages.success(request, "Verification email sent successfully.")
+    elif message == 'verification_email_error':
+        messages.error(request, "There was a problem sending the verification email. Please try again.")
+
+    return render(request, 'unauthenticated/main.html', {'page_name': page_name})
 
 
 # LOGIN, REGISTER, LOGOUT
@@ -48,6 +62,8 @@ class CustomLoginView(LoginView):
             if created:
                 professor_request.save()
             return reverse('home_professor')
+        else:
+            return reverse('main')
         
 
 # logout
@@ -56,6 +72,39 @@ def log_out(request):
     logout(request)
     return redirect("/")
 
+def activated(request, uidb64, token):
+    User = get_user_model()
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Your account was activated. You can now log in into your account!")
+    else:
+        messages.error(request, "Activation link is invalid!")
+    return redirect('/main')
+
+def activateEmail(request, user, to_email):
+    mail_subject = "Activate your user account"
+    message = render_to_string('unauthenticated/activate_account.html', {
+        'user': user.username,
+        'domain': get_current_site(request).domain,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': account_activation_token.make_token(user),
+        'protocol': 'https' if request.is_secure() else 'http'
+    })
+    email = EmailMessage(mail_subject, message, to = [to_email])
+    if email.send():
+        request.session['message'] = 'verification_sent'
+    else:
+        request.session['message'] = 'verification_email_error'
+    return redirect('/main/')
+
+
 # inregistrare
 @logout_required()
 def sign_up(request):
@@ -63,8 +112,11 @@ def sign_up(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+
+            activateEmail(request, user, form.cleaned_data.get('email'))
             return redirect('/main')
     else:
         form = RegisterForm()

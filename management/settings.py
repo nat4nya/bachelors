@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,6 +53,18 @@ DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Specify the directory where the backup files will be stored.
 DBBACKUP_STORAGE_OPTIONS = {'location': '/backup'}
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'akavyoa@gmail.com'
+EMAIL_HOST_PASSWORD = 'xyashjkdjjffozwx'
+
+DEFAULT_FROM_EMAIL = 'noreply<no_reply@domain.com>'
+PASSWORD_RESET_TIMEOUT = 3600
 
 
 MIDDLEWARE = [

@@ -11,11 +11,9 @@ class RegisterForm(UserCreationForm):
         model = User
         fields = ["username", "email", "password1", "password2"]
 
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if email and not email.endswith('@uab.ro'):
-            raise ValidationError("Only email addresses ending with '@uab.ro' are allowed.")
-        return email
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
 
 class NoteForm(forms.ModelForm):
     class Meta:

@@ -1,0 +1,3 @@
+django-verify-email
+django-crispy-forms
+six

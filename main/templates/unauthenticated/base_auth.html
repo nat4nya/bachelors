@@ -78,7 +78,7 @@
             position: relative; /* Positioning for absolute elements */
         }
     </style>
-    <title>{% block title %} Pagina principala {% endblock %}</title>
+    <title>{% block title %} Pagina principala {% endblock %} </title>
 </head>
 <body>
     <div class="decorative-bar-left">
@@ -106,6 +106,7 @@
     </div>
 
     {% block panel_content %}{% endblock %}
+    {% block verification_message %}{% endblock %}
 
     <div class="black-bar">
         <p style="color: white;">

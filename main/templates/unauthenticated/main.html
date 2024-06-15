@@ -1,5 +1,19 @@
 {% extends 'unauthenticated/base_auth.html' %}
 {% block title %} Pagina principala {% endblock %}
 
-{% block content %}
+{% block verification_message %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8 d-flex justify-content-center">
+      {% if messages %}
+        <div class="alert alert-success alert-dismissible fade show position-absolute" style="bottom: 50px; width: 50%;" role="alert">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}
