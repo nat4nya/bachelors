@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.contrib.auth.views import LoginView
 from .decorators import group_required, logout_required, no_accepted_notes_required, no_pending_notes_required
 from django.contrib.auth.models import User
-from .models import Note
+from .models import Note, UsedPasswordResetToken  
 from django.contrib import messages
 from .models import Notification, ProfessorRequest
 from django.http import HttpResponseRedirect
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 # password check
-def password_manual_check(user, old_password, new_password1, new_password2):
+def password_manual_check_home(user, old_password, new_password1, new_password2):
     if not check_password(old_password, user.password):
         return False, 'Your old password is incorrect.'
     elif new_password1 != new_password2:
@@ -38,6 +38,17 @@ def password_manual_check(user, old_password, new_password1, new_password2):
         except ValidationError as e:
             return False, '\n'.join(e.messages)  # Return validation error messages
 
+def password_manual_check_auth(user, new_password, confirm_password):
+    # Check if new_password and confirm_password match
+    if new_password != confirm_password:
+        return False, 'The new passwords do not match.'
+
+    # Validate the new password using Django's built-in password validation
+    try:
+        validate_password(new_password, user=user)
+        return True, None  # Password meets requirements
+    except ValidationError as e:
+        return False, '\n'.join(e.messages)  # Return validation error messages
 
 # pagina principala
 @logout_required()
@@ -48,6 +59,101 @@ def main(request):
 
 # LOGIN, REGISTER, LOGOUT
 # creare useri si separarea lor pe grupuri
+def reset_password_auth_action(request, uidb64, token):
+    page_name = "Resetare parola"
+    if request.method == 'POST':
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        # Decode uidb64 to get user object
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        
+        
+        if user is not None and reset_password_token.check_token(user, token):
+            # Perform manual password checks
+            is_valid, error_message = password_manual_check_auth(user, new_password, confirm_password)
+
+            if not is_valid:
+                messages.error(request, error_message)
+            else:
+                # Update user's password and save
+                user.password = make_password(new_password)
+                user.save()
+
+                # Mark the token as used
+                UsedPasswordResetToken.objects.create(user=user, token=token)
+
+                messages.success(request, 'Your password has been successfully updated.')
+
+                # Redirect to some success page or any other desired URL
+                return redirect('/')  # Redirect to homepage or another page
+
+        else:
+            messages.error(request, 'Invalid password reset link. Please request a new one.')
+            return redirect('/')  # Redirect to homepage or another page
+
+    # If there are errors or the method is not POST, render the form again
+    return render(request, 'unauthenticated/reset_password_page.html', {'page_name': page_name, 'uidb64': uidb64, 'token': token})
+
+
+def reset_password_auth_page(request, uidb64, token):
+    page_name = "Resetare parola"
+
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    
+    # Check if the token has already been used
+    if UsedPasswordResetToken.objects.filter(user=user, token=token).exists():
+        messages.error(request, 'This password reset link has already been used. Please request a new one.')
+        return redirect('/')  # Redirect to homepage or another page
+
+    return render(request, 'unauthenticated/reset_password_page.html', {'page_name': page_name, 'uidb64': uidb64, 'token': token})
+
+def reset_password_auth(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+
+        # Perform any additional validation as needed
+        if not email:
+            messages.error(request, 'Email field is required.')
+            return redirect('/')  # Redirect to reset password page if email is not provided
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, 'User with that email does not exist.')
+            return redirect('/')  # Redirect to reset password page if user does not exist
+
+        # Generate password reset token
+        token_generator = reset_password_token  # Use your custom token generator
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = token_generator.make_token(user)
+
+        # Construct reset password email
+        mail_subject = 'Reset your password'
+        message = render_to_string('unauthenticated/reset_password_email.html', {
+            'user': user,
+            'domain': get_current_site(request).domain,
+            'uid': uid,
+            'token': token,
+        })
+        email = EmailMessage(mail_subject, message, to=[email])
+        email.send()
+
+        # Display success message
+        messages.success(request, 'An email with password reset instructions has been sent to your email address.')
+
+        return redirect('/')  # Redirect to reset password page after sending email
+
+    return redirect('reset_password_home')  # Redirect to reset password page if request method is not POST
+
 class CustomLoginView(LoginView):
     template_name = 'unauthenticated/login.html'
 
@@ -129,63 +235,6 @@ def sign_up(request):
         form = RegisterForm()
     return render(request, 'unauthenticated/sign_up.html', {"form": form, "page_name": page_name})
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def reset_password_verified(request, uidb64, token):
-#     messages.success(request, "Your account was activated. You can now log in into your account!")
-#     page_name = "Resetare parola"
-
-#     return render(request, 'unauthenticated/reset_password_page.html', {'page_name': page_name})
-
-# def reset_password(request):
-#     user = request.user
-
-#     mail_subject = "Reset your password"
-#     message = render_to_string('unauthenticated/reset_password_email.html', {
-#         'user': user,
-#         'domain': get_current_site(request).domain,
-#         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-#         'token': reset_password_token.make_token(user),
-#         'protocol': 'https' if request.is_secure() else 'http'
-#     })
-#     email = EmailMessage(mail_subject, message, to=[user.email])
-#     if email.send():
-#         messages.success(request, "Reset password email sent successfully.")
-#     else:
-#         messages.error(request, "There was a problem sending the reset password email. Please try again.")
-
-#     # Determine redirect URL based on user's group
-#     if user.groups.filter(name='student').exists():
-#         if Note.objects.filter(author=user, is_accepted=True).exists():
-#             return redirect('home_student_accepted')  # Redirect to accepted notes page
-#         else: 
-#             return redirect('home_student')
-#     elif user.groups.filter(name='secretar').exists():
-#         return redirect('home_secretary')
-#     elif user.groups.filter(name='profesor').exists():
-#         professor_request, created = ProfessorRequest.objects.get_or_create(professor=user)
-#         if created:
-#             professor_request.save()
-#         return redirect('home_professor')
-#     else:
-#         return redirect('main')
-
-
-
 # PAGINI PRINCIPALE
 # pagina principala a studentului
 @login_required(login_url='/login')
@@ -201,7 +250,7 @@ def reset_password_home_action(request):
         new_password2 = request.POST.get('new_password2')
 
         # Call the password_check function
-        is_valid, message = password_manual_check(user, old_password, new_password1, new_password2)
+        is_valid, message = password_manual_check_home(user, old_password, new_password1, new_password2)
         
         if not is_valid:
             messages.error(request, message)

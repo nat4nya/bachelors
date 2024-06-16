@@ -21,4 +21,7 @@ urlpatterns = [
     path('activated/<uidb64>/<token>/', views.activated, name='activated'),  # Note the trailing slash here
     path('reset-password-home/', views.reset_password_home, name='reset_password_home'),
     path('reset-password/action/', views.reset_password_home_action, name='reset_password_home_action'),
+    path('reset-password-auth/', views.reset_password_auth, name='reset_password_auth'),
+    path('reset-password-auth-page/<uidb64>/<token>/', views.reset_password_auth_page, name='reset_password_auth_page'),
+    path('reset-password-auth-action/<uidb64>/<token>/', views.reset_password_auth_action, name='reset_password_auth_action'),
 ]

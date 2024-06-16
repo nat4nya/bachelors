@@ -10,7 +10,21 @@
         <p> Creează un cont <a href="/sign-up">aici</a>!</p>
         <button type="submit" class="btn btn-success">Autentificare</button>
     </form>
-    <form>
-        <button type="button" class="btn btn-secondary mt-3">Resetare parolă</button>
-    </form>
+
+    <div id="resetPasswordAccordion">
+        <button type="button" class="btn btn-danger mt-3" data-bs-toggle="collapse" data-bs-target="#resetPasswordCollapse" aria-expanded="false" aria-controls="resetPasswordCollapse">
+            Resetare parolă
+        </button>
+        <div class="collapse mt-3" id="resetPasswordCollapse">
+            <form id="resetPasswordForm" action="{% url 'reset_password_auth' %}" method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="emailInput" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="emailInput" name="email" required>
+                </div>
+                <button type="submit" class="btn btn-success">Trimite</button>
+            </form>
+        </div>
+    </div>
+    
 {% endblock %}
