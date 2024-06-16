@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, get_user_model, update_session_auth_hash
+from django.contrib.auth import logout, get_user_model, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, NoteForm
 from django.urls import reverse
@@ -19,7 +19,6 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.password_validation import validate_password, ValidationError
-
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +70,6 @@ def reset_password_auth_action(request, uidb64, token):
             user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
-        
         
         if user is not None and reset_password_token.check_token(user, token):
             # Perform manual password checks

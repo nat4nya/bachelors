@@ -1,3 +1,10 @@
-django-verify-email
+django
 django-crispy-forms
+django-dbbackup
+django-cors-headers
+django-verify-email
 six
+djangorestframework 
+djangorestframework-simplejwt
+crispy-bootstrap5
+psycopg2-binary

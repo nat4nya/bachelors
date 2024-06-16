@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-import os
+import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,8 +42,18 @@ INSTALLED_APPS = [
     'crispy_forms', # de scris
     'crispy_bootstrap5', # de scris
     'dbbackup',
-    'corsheaders'
+    'corsheaders',
+    'rest_framework',
+    'rest_framework.authtoken'
 ]
+
+# JWT settings
+JWT_AUTH = {
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=1),  # Access token expiration time
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),  # Refresh token expiration time
+    'JWT_ALLOW_REFRESH': True,  # Allow refresh tokens
+    'JWT_REFRESH_LEEWAY': datetime.timedelta(days=1),  # Refresh token leeway time
+}
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
@@ -94,6 +104,9 @@ CSRF_TRUSTED_ORIGINS = [
 ROOT_URLCONF = 'management.urls'
 
 ALLOWED_HOSTS = ['127.0.0.1']
+
+SESSION_COOKIE_AGE = 3600
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session persists across browser restarts
 
 TEMPLATES = [
     {
