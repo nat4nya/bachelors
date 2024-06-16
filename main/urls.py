@@ -19,4 +19,6 @@ urlpatterns = [
     path('home-student/accepted/', views.home_student_accepted, name='home_student_accepted'),
     path('refuse-all/', views.refuse_all_requests, name='refuse_all_requests'),
     path('activated/<uidb64>/<token>/', views.activated, name='activated'),  # Note the trailing slash here
+    path('reset-password-home/', views.reset_password_home, name='reset_password_home'),
+    path('reset-password/action/', views.reset_password_home_action, name='reset_password_home_action'),
 ]

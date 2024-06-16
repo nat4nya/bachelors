@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, get_user_model
+from django.contrib.auth import login, logout, get_user_model, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, NoteForm
 from django.urls import reverse
@@ -11,30 +11,38 @@ from django.contrib import messages
 from .models import Notification, ProfessorRequest
 from django.http import HttpResponseRedirect
 import logging
-from .tokens import account_activation_token
+from .tokens import account_activation_token, reset_password_token
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
+from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.password_validation import validate_password, ValidationError
 
 
 logger = logging.getLogger(__name__)
+
+
+
+# password check
+def password_manual_check(user, old_password, new_password1, new_password2):
+    if not check_password(old_password, user.password):
+        return False, 'Your old password is incorrect.'
+    elif new_password1 != new_password2:
+        return False, 'The new passwords do not match.'
+    else:
+        try:
+            validate_password(new_password1, user=user)
+            return True, None  # Password meets requirements
+        except ValidationError as e:
+            return False, '\n'.join(e.messages)  # Return validation error messages
 
 
 # pagina principala
 @logout_required()
 def main(request):
     page_name = "Pagina principală"
-
-    message = request.session.pop('message', None)
-    print("Message received:", message)
-
-    if message == 'verification_sent':
-        messages.success(request, "Verification email sent successfully.")
-    elif message == 'verification_email_error':
-        messages.error(request, "There was a problem sending the verification email. Please try again.")
-
     return render(request, 'unauthenticated/main.html', {'page_name': page_name})
 
 
@@ -90,7 +98,7 @@ def activated(request, uidb64, token):
 
 def activateEmail(request, user, to_email):
     mail_subject = "Activate your user account"
-    message = render_to_string('unauthenticated/activate_account.html', {
+    message = render_to_string('unauthenticated/activate_account_email.html', {
         'user': user.username,
         'domain': get_current_site(request).domain,
         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
@@ -99,10 +107,9 @@ def activateEmail(request, user, to_email):
     })
     email = EmailMessage(mail_subject, message, to = [to_email])
     if email.send():
-        request.session['message'] = 'verification_sent'
+        messages.success(request, "Verification email sent successfully.")
     else:
-        request.session['message'] = 'verification_email_error'
-    return redirect('/main/')
+        messages.error(request, "There was a problem sending the verification email. Please try again.")
 
 
 # inregistrare
@@ -126,8 +133,89 @@ def sign_up(request):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+# def reset_password_verified(request, uidb64, token):
+#     messages.success(request, "Your account was activated. You can now log in into your account!")
+#     page_name = "Resetare parola"
+
+#     return render(request, 'unauthenticated/reset_password_page.html', {'page_name': page_name})
+
+# def reset_password(request):
+#     user = request.user
+
+#     mail_subject = "Reset your password"
+#     message = render_to_string('unauthenticated/reset_password_email.html', {
+#         'user': user,
+#         'domain': get_current_site(request).domain,
+#         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+#         'token': reset_password_token.make_token(user),
+#         'protocol': 'https' if request.is_secure() else 'http'
+#     })
+#     email = EmailMessage(mail_subject, message, to=[user.email])
+#     if email.send():
+#         messages.success(request, "Reset password email sent successfully.")
+#     else:
+#         messages.error(request, "There was a problem sending the reset password email. Please try again.")
+
+#     # Determine redirect URL based on user's group
+#     if user.groups.filter(name='student').exists():
+#         if Note.objects.filter(author=user, is_accepted=True).exists():
+#             return redirect('home_student_accepted')  # Redirect to accepted notes page
+#         else: 
+#             return redirect('home_student')
+#     elif user.groups.filter(name='secretar').exists():
+#         return redirect('home_secretary')
+#     elif user.groups.filter(name='profesor').exists():
+#         professor_request, created = ProfessorRequest.objects.get_or_create(professor=user)
+#         if created:
+#             professor_request.save()
+#         return redirect('home_professor')
+#     else:
+#         return redirect('main')
+
+
+
 # PAGINI PRINCIPALE
 # pagina principala a studentului
+@login_required(login_url='/login')
+def reset_password_home(request):
+    return render(request, 'main/reset_password_home.html')
+
+@login_required(login_url='/login')
+def reset_password_home_action(request):
+    if request.method == 'POST':
+        user = request.user
+        old_password = request.POST.get('old_password')
+        new_password1 = request.POST.get('new_password1')
+        new_password2 = request.POST.get('new_password2')
+
+        # Call the password_check function
+        is_valid, message = password_manual_check(user, old_password, new_password1, new_password2)
+        
+        if not is_valid:
+            messages.error(request, message)
+        else:
+            # Update user's password
+            user.set_password(new_password1)
+            user.save()
+            # Update session to reflect the password change
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Your password has been successfully updated.')
+            return redirect('/')  # Redirect to home or any other page after successful password change
+
+    return redirect('reset_password_home')  # Redirect to reset password page if form submission fails
+
 @login_required(login_url='/login')
 @group_required('student')
 @no_accepted_notes_required
