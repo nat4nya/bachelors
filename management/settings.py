@@ -38,34 +38,31 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'main.apps.MainConfig', # de scris
-    'crispy_forms', # de scris
-    'crispy_bootstrap5', # de scris
+    'main.apps.MainConfig',
+    'crispy_forms',
+    'crispy_bootstrap5',
     'dbbackup',
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken'
 ]
 
-# JWT settings
+# token de acces si sesiune
 JWT_AUTH = {
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=1),  # Access token expiration time
-    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),  # Refresh token expiration time
-    'JWT_ALLOW_REFRESH': True,  # Allow refresh tokens
-    'JWT_REFRESH_LEEWAY': datetime.timedelta(days=1),  # Refresh token leeway time
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=1),
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_REFRESH_LEEWAY': datetime.timedelta(days=1),
 }
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-# Specify the storage backend to use for storing the backup files.
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
-
-# Specify the directory where the backup files will be stored.
 DBBACKUP_STORAGE_OPTIONS = {'location': '/backup'}
 
 
-
+# cum functioneaza e-mail-ul:
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -81,32 +78,30 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',  # Ensure this is included
+    'django.middleware.csrf.CsrfViewMiddleware',  # csrf pentru securitate
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# CSRF cookie settings
+# setarile pentru csrf cookie
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SECURE = False  # Set to True if using HTTPS
 
-# CORS settings
 CORS_ALLOWED_ORIGINS = [
     "https://127.0.0.1:8000",
 ]
-
-# CSRF trusted origins
 CSRF_TRUSTED_ORIGINS = [
     "https://127.0.0.1:8000",
 ]
 
 ROOT_URLCONF = 'management.urls'
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1'] # deocamdata merge numai local
 
-SESSION_COOKIE_AGE = 3600
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session persists across browser restarts
+# setari pentru token-ul de sesiune
+SESSION_COOKIE_AGE = 3600 # maxim o ora conectat
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True # daca inchide browser-ul trebuie sa se autentifice user-ul iar
 
 TEMPLATES = [
     {
@@ -129,7 +124,7 @@ WSGI_APPLICATION = 'management.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
+# conectarea la baza de date locala
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -144,7 +139,6 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -163,7 +157,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'

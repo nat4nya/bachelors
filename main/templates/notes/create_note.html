@@ -1,5 +1,5 @@
 {% extends 'main/base_home.html' %}
-{% block title %} Create a note {% endblock %}
+{% block title %} Creează o cerere {% endblock %}
 {% load crispy_forms_tags %}
 {% block content %}
 <form method="post">
@@ -27,7 +27,7 @@
             </div>
         {% endif %}
     </div>
-    <button type="submit" class="btn btn-success">Send</button>
-    <a href="{% url 'home_student' %}" class="btn btn-secondary">Back</a>
+    <button type="submit" class="btn btn-success">Trimite</button>
+    <a href="{% url 'home_student' %}" class="btn btn-secondary">Înapoi</a>
 </form>
 {% endblock %}

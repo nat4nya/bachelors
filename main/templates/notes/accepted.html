@@ -31,6 +31,7 @@
         <h2 class="text-center"> Felicitări! Cererea ta a fost acceptată! </h2>
       </div>
       <ul class="list-unstyled">
+        <!-- Afisarea cererii acceptate -->
         {% for note in accepted_notes %}
         <li style="font-size: 18px;">
           {{ note.title }} - {{ note.description }} 
@@ -43,8 +44,10 @@
 </div>
 {% endblock %}
 
+<!-- Artificii -->
 {% block fireworks-animation %}
-  <div id="fireworks-container"></div> <!-- Container for fireworks animation -->
+  <div id="fireworks-container"></div>
+  <!-- Script ca sa mearga artificiile -->
   <script src="https://unpkg.com/fireworks-js@2.x/dist/index.umd.js"></script>
   <script>
         // Wait for the DOM content to be loaded

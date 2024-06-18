@@ -1,8 +1,9 @@
 {% extends 'unauthenticated/base_auth_panel.html' %}
-{% block title %} Sign Up {% endblock%}
+{% block title %} Înregistrare {% endblock%}
 {% load crispy_forms_tags %}
 {% block inner_panel_content %}
     <form method="post">
+        <!-- Form pentru inregistrare -->
         {% csrf_token %} {{form|crispy}}
         <p> Conecteaza-te <a href="/login">aici</a>!</p>
         <button type="submit" class="btn btn-success">Inregistrare</button>

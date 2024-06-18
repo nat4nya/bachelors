@@ -1,16 +1,18 @@
 {% extends 'unauthenticated/base_auth_panel.html' %}
 
-{% block title %} Login {% endblock %}
+{% block title %} Autentificare {% endblock %}
 {% load crispy_forms_tags %}
 
 {% block inner_panel_content %}
     <form method="post">
         {% csrf_token %}
+        <!-- Form pentru autentificare -->
         {{ form|crispy }}
         <p> Creează un cont <a href="/sign-up">aici</a>!</p>
         <button type="submit" class="btn btn-success">Autentificare</button>
     </form>
 
+    <!-- Resetarea parolei -->
     <div id="resetPasswordAccordion">
         <button type="button" class="btn btn-danger mt-3" data-bs-toggle="collapse" data-bs-target="#resetPasswordCollapse" aria-expanded="false" aria-controls="resetPasswordCollapse">
             Resetare parolă

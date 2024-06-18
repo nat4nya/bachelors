@@ -3,6 +3,7 @@ from . import views
 from .views import CustomLoginView
 
 urlpatterns = [
+    # toate url-urile de care e nevoie pentru ca aici se face legatura dintre pagini si views.py
     path('', views.main, name='main'),
     path('main/', views.main, name='main'),\
     path('home-student/', views.home_student, name='home_student'),

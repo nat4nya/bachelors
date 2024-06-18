@@ -1,7 +1,7 @@
 {% autoescape off %}
-Hi {{ user.username }},
+Bună ziua {{ user.username }},
 
-Please click on the link below to reset the password of your account:
+Vă rog să apăsați pe link-ul de mai jos pentru a vă activa contul:
 
 http://{{ domain }}{% url 'activated' uidb64=uid token=token %}
 {% endautoescape %}

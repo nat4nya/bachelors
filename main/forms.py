@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.forms import ValidationError
 from .models import Note
 
+# modelul de inregistrare
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
 
@@ -15,6 +16,7 @@ class RegisterForm(UserCreationForm):
         self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
 
+# modelul cererii
 class NoteForm(forms.ModelForm):
     class Meta:
         model = Note

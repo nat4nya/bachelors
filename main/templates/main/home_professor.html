@@ -1,6 +1,7 @@
 {% extends 'main/base_home.html' %}
 {% block title %} Professor Home {% endblock %}
 
+<!-- Mesajele -->
 {% block no_requests %}
 {% if messages %}
 <div class="alert alert-success alert-dismissible fade show no_request" role="alert">
@@ -30,6 +31,7 @@
       <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#myAccordion">
         <div class="card-body">
           <ul>
+            <!-- Afiseaza toate cererile acceptate -->
             {% for note in notes_received %}
               {% if note.is_accepted %}
                 <li>
@@ -51,6 +53,7 @@
       <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#myAccordion">
         <div class="card-body">
           <ul>
+            <!-- Afiseaza toate cererile in asteptare -->
             {% for note in notes_received %}
               {% if not note.is_accepted %}
                 <li>
@@ -58,17 +61,17 @@
                   <strong>Titlul lucrarii:</strong> {{ note.title }}<br>
                   <strong>Descrierea lucrarii:</strong> {{ note.description }}<br>
                   <strong>Data crearii:</strong> {{ note.created_at }}<br>
-                  <!-- Accept button -->
+                  <!-- Butonul de acceptare -->
                   <form id="acceptForm_{{ note.id }}" action="{% url 'accept_note' note.id %}" method="post" style="display: inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-success">Acceptă</button>
                   </form>
-                  <!-- Refuse button form -->
+                  <!-- Butonul de refuzare -->
                   <form id="refuseForm_{{ note.id }}" action="{% url 'refuse_note' note.id %}" method="post" style="display: inline;">
                     {% csrf_token %}
                     <input type="hidden" name="note_id" value="{{ note.id }}">
                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmRejectModal_{{ note.id }}">Refuză</button>
-                    <!-- Modal -->
+                    <!-- Confirmarea refuzului -->
                     <div class="modal fade" id="confirmRejectModal_{{ note.id }}" tabindex="-1" aria-labelledby="confirmRejectModalLabel" aria-hidden="true">
                       <div class="modal-dialog">
                         <div class="modal-content">
@@ -104,7 +107,6 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
-          <!-- Form submission -->
           <form method="post" action="{% url 'refuse_all_requests' %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger" id="deleteRequestsBtn">Da, refuză tot</button>
@@ -114,18 +116,17 @@
     </div>
   </div>
 </div>
-<!-- Include Bootstrap CSS -->
+<!-- Script -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 {% if show_remove_button %}
-
-<!-- Remove Myself button -->
+<!-- Buton de devenire indisponibil -->
 <button type="button" class="btn btn-danger position-fixed remove-btn"
         style="bottom: 60px; right: 15px; border-radius: 10px; z-index: 1001;"
         data-bs-toggle="modal" data-bs-target="#confirmRemoveModal">
       Pune-mă indisponibil/ă
 </button>
-<!-- Modal for Remove Myself -->
+<!-- Modal pentru devenire indisponibil -->
 <div class="modal fade" id="confirmRemoveModal" tabindex="-1" aria-labelledby="confirmRemoveModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -134,7 +135,6 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
-        <!-- Form submission -->
         <form method="post" action="{% url 'remove_myself' %}">
           {% csrf_token %}
           <button type="submit" class="btn btn-danger" id="removeMyselfBtn">Da, pune-mă indisponibil/ă</button>
@@ -143,16 +143,14 @@
     </div>
   </div>
 </div>
-
 {% else %}
-
-<!-- Add Myself button -->
+<!-- Buton de devenire disponibil -->
 <button type="button" class="btn btn-success position-fixed add-btn"
         style="bottom: 60px; right: 15px; border-radius: 10px; z-index: 1001;"
         data-bs-toggle="modal" data-bs-target="#confirmAddModal">
     Pune-mă disponibil/ă
 </button>
-<!-- Modal for Add Myself -->
+<!-- Confirmare pentru devenire disponibil -->
 <div class="modal fade" id="confirmAddModal" tabindex="-1" aria-labelledby="confirmAddModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -161,7 +159,6 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
-        <!-- Form submission -->
         <form method="post" action="{% url 'add_myself' %}" id="addMyselfForm">
           {% csrf_token %}
           <button type="submit" class="btn btn-danger" id="addMyselfBtn">Da, pune-mă disponibil/ă</button>
@@ -170,24 +167,22 @@
     </div>
   </div>
 </div>
-
 {% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // JavaScript to handle refusal process
+  // Javascript pentru procesul de refuzare a unei cereri
   document.addEventListener('DOMContentLoaded', function() {
     const modalForms = document.querySelectorAll('form[id^="refuseForm_"]');
 
     modalForms.forEach(function(form) {
       form.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent form submission
+        event.preventDefault();
 
         const formData = new FormData(form);
         const noteId = formData.get('note_id');
         const reason = formData.get('reason');
 
-        // Send the request to the server
         fetch(form.action, {
           method: 'POST',
           body: formData,
@@ -197,17 +192,14 @@
         })
         .then(response => {
           if (response.ok) {
-            window.location.reload(); // Reload the page or handle UI update as needed
-          } else {
-            alert('An error occurred while processing the rejection request. Please try again.');
+            window.location.reload(); // Refresh la pagina
           }
         })
         .catch(error => {
           console.error('Error:', error);
-          alert('An error occurred while processing the rejection request. Please try again.');
         })
         .finally(() => {
-          // Close the modal after submission
+          // inchide modal-ul
           const modal = document.getElementById(`confirmRejectModal_${noteId}`);
           if (modal) {
             const modalInstance = bootstrap.Modal.getInstance(modal);
