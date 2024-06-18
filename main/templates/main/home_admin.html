@@ -1,0 +1,172 @@
+{% extends 'main/base_home.html' %}
+{% block title %} Admin Home {% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Settings tabs -->
+    <ul class="nav nav-tabs" id="settings-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="all-users-tab" data-bs-toggle="tab" href="#all-users" role="tab" aria-controls="all-users" aria-selected="true">Toți utilizatorii</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="all-notes-tab" data-bs-toggle="tab" href="#all-notes" role="tab" aria-controls="all-notes" aria-selected="false">Toate cererile</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="add-role-department-tab" data-bs-toggle="tab" href="#add-role-department" role="tab" aria-controls="add-role-department" aria-selected="false">Adaugă departament/specializare</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="modify-note-tab" data-bs-toggle="tab" href="#modify-note" role="tab" aria-controls="modify-note" aria-selected="false">Modifică o cerere</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="reset-user-password-tab" data-bs-toggle="tab" href="#reset-user-password" role="tab" aria-controls="reset-user-password" aria-selected="false">Resetează parola utilizatorului</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="add-admin-tab" data-bs-toggle="tab" href="#add-admin" role="tab" aria-controls="add-admin" aria-selected="false">Adaugă admin</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="remove-user-tab" data-bs-toggle="tab" href="#remove-user" role="tab" aria-controls="remove-user" aria-selected="false">Șterge un utilizator</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="delete-all-notes-students-tab" data-bs-toggle="tab" href="#delete-all-notes-students" role="tab" aria-controls="delete-all-notes-students" aria-selected="false">Șterge toți studenții și cererile</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="logs-tab" data-bs-toggle="tab" href="#logs" role="tab" aria-controls="logs" aria-selected="false">Istoric</a>
+        </li>
+    </ul>
+    <!-- Settings content -->
+    <div class="tab-content mt-3" id="settings-tabContent">
+        <div class="tab-pane fade show active" id="all-users" role="tabpanel" aria-labelledby="all-users-tab">
+            <!-- Add content for All Users settings -->
+            <form>
+                <div class="mb-3">
+                    <label for="user-search" class="form-label">Caută un utilizator</label>
+                    <input type="text" class="form-control" id="user-search" placeholder="Introdu adresa de e-mail sau numele de utilizator">
+                </div>
+                <button type="submit" class="btn btn-primary">Caută</button>
+            </form>
+        </div>
+
+        <div class="tab-pane fade" id="all-notes" role="tabpanel" aria-labelledby="all-notes-tab">
+            <!-- Add content for All Notes settings -->
+            <form>
+                <div class="mb-3">
+                    <label for="note-search" class="form-label">Caută o cerere</label>
+                    <input type="text" class="form-control" id="note-search" placeholder="Caută o cerere după student sau profesor">
+                </div>
+                <button type="submit" class="btn btn-primary">Caută</button>
+            </form>
+        </div>
+
+        <div class="tab-pane fade" id="add-role-department" role="tabpanel" aria-labelledby="add-role-department-tab">
+            <form>
+                <div class="mb-3">
+                    <label for="department-name" class="form-label">Adaugă departament</label>
+                    <input type="text" class="form-control" id="department-name" placeholder="Introdu numele noului departament">
+                </div>
+                <button type="submit" class="btn btn-primary">Adaugă departament</button>
+            </form>
+            
+            <h4 class="mt-4">Adaugă o specializare departamentului</h4>
+            <form>
+                <div class="mb-3">
+                    <label for="department-select" class="form-label">Selectează departamentul</label>
+                    <select class="form-select" id="department-select">
+                        <option selected>-</option>
+                        <!-- Options should be dynamically generated based on available departments -->
+                        <option value="informatics">Opțiune 1</option>
+                        <option value="mathematics">Opțiune 2</option>
+                        <!-- Add more options as needed -->
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="email-rule" class="form-label">Specializarea (după e-mail)</label>
+                    <input type="text" class="form-control" id="email-rule" placeholder="Adaugă specializarea">
+                </div>
+                <button type="submit" class="btn btn-primary">Adaugă</button>
+            </form>
+        </div>
+
+        <div class="tab-pane fade" id="modify-note" role="tabpanel" aria-labelledby="modify-note-tab">
+            <!-- Add content for Modify Note settings -->
+            <form>
+                <div class="mb-3">
+                    <label for="note-id" class="form-label">ID-ul cererii</label>
+                    <input type="text" class="form-control" id="note-id" placeholder="Introdu ID-ul cererii">
+                </div>
+                <button type="submit" class="btn btn-primary">Modifică</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="reset-user-password" role="tabpanel" aria-labelledby="reset-user-password-tab">
+
+            <!-- Add content for Reset User Password settings -->
+            <form>
+                <div class="mb-3">
+                    <label for="user-id" class="form-label">E-mail-ul utilizatorului</label>
+                    <input type="text" class="form-control" id="user-id" placeholder="Introdu e-mail-ul utilizatorului">
+                </div>
+                <div class="mb-3">
+                    <label for="new-password" class="form-label">Parolă nouă</label>
+                    <input type="password" class="form-control" id="new-password" placeholder="Introdu noua parolă">
+                </div>
+                <div class="mb-3">
+                    <label for="confirm-new-password" class="form-label">Confirmă parola nouă</label>
+                    <input type="password" class="form-control" id="confirm-new-password" placeholder="Introdu noua parolă pentru confirmare">
+                </div>
+                <button type="submit" class="btn btn-primary">Resetează parola</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="add-admin" role="tabpanel" aria-labelledby="add-admin-tab">
+
+            <!-- Add content for Add Admin settings -->
+            <form>
+                <div class="mb-3">
+                    <label for="admin-email" class="form-label">E-mail-ul adminului</label>
+                    <input type="email" class="form-control" id="admin-email" placeholder="Introdu e-mail-ul noului admin">
+                </div>
+                <button type="submit" class="btn btn-primary">Adaugă</button>
+            </form>
+        </div>
+
+        <div class="tab-pane fade" id="remove-user" role="tabpanel" aria-labelledby="remove-user-tab">
+            <!-- Add content for Remove User settings -->
+            <form>
+                <div class="mb-3">
+                    <label for="remove-user-id" class="form-label">ID-ul utilizatorului</label>
+                    <input type="text" class="form-control" id="remove-user-id" placeholder="Introdu ID-ul utilizatorului">
+                </div>
+                <button type="submit" class="btn btn-danger">Șterge utilizatorul</button>
+            </form>
+        </div>
+
+        <div class="tab-pane fade" id="delete-all-notes-students" role="tabpanel" aria-labelledby="delete-all-notes-students-tab">
+            <h4 class="text-danger" >Delete All Notes and Students</h4>
+            <form>
+                <div class="mb-3">
+                    <p class="text-danger">Această acțiune este ireversibilă!</p>
+                    <button type="submit" class="btn btn-danger">Șterge</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="tab-pane fade" id="logs" role="tabpanel" aria-labelledby="logs-tab">
+            <!-- Add content for Logs settings -->
+            <form>
+                <div class="mb-3">
+                    <label for="log-filter" class="form-label">Filtrează istoricul după</label>
+                    <select class="form-select" id="log-filter" onchange="document.getElementById('specific-date-input').style.display = this.value === 'specific-day' ? 'block' : 'none'">
+                        <option value="month">-</option>
+                        <option value="month">Lună</option>
+                        <option value="year">An</option>
+                        <option value="specific-day">Dată specifică</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="specific-date-input" style="display: none;">
+                    <label for="log-date" class="form-label">Selectează data</label>
+                    <input type="date" class="form-control" id="log-date">
+                </div>
+                <button type="submit" class="btn btn-primary">Vizualizează</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

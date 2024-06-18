@@ -1,8 +1,6 @@
 {% extends 'main/base_home.html' %}
 {% block title %} Professor Home {% endblock %}
 
-{% block content %}
-
 {% block no_requests %}
 {% if messages %}
 <div class="alert alert-success alert-dismissible fade show no_request" role="alert">
@@ -13,6 +11,8 @@
 </div>
 {% endif %}
 {% endblock %}
+
+{% block content %}
 
 <style>
   /* Custom CSS for larger headings */
@@ -61,29 +61,25 @@
                   <!-- Accept button -->
                   <form id="acceptForm_{{ note.id }}" action="{% url 'accept_note' note.id %}" method="post" style="display: inline;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-success">Accept</button>
+                    <button type="submit" class="btn btn-success">Acceptă</button>
                   </form>
                   <!-- Refuse button form -->
                   <form id="refuseForm_{{ note.id }}" action="{% url 'refuse_note' note.id %}" method="post" style="display: inline;">
                     {% csrf_token %}
                     <input type="hidden" name="note_id" value="{{ note.id }}">
-                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmRejectModal_{{ note.id }}">Refuse</button>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmRejectModal_{{ note.id }}">Refuză</button>
                     <!-- Modal -->
                     <div class="modal fade" id="confirmRejectModal_{{ note.id }}" tabindex="-1" aria-labelledby="confirmRejectModalLabel" aria-hidden="true">
                       <div class="modal-dialog">
                         <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title" id="confirmRejectModalLabel">Confirm rejection</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
                           <div class="modal-body">
-                            <label for="reason_{{ note.id }}">Reason for rejection:</label>
-                            <textarea class="form-control" id="reason_{{ note.id }}" name="reason" rows="4" placeholder="Enter your reason here..." required></textarea>
+                            <label for="reason_{{ note.id }}">Motiv:</label>
+                            <textarea class="form-control" id="reason_{{ note.id }}" name="reason" rows="4" placeholder="De ce vrei să refuzi această cerere?.." required></textarea>
                           </div>
                           <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
                             <!-- Yes, Reject button -->
-                            <button type="submit" class="btn btn-danger">Yes, Reject</button>
+                            <button type="submit" class="btn btn-danger">Da, refuză cererea</button>
                           </div>
                         </div>
                       </div>
@@ -104,7 +100,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-body">
-          <p>Sunteți sigur că vreți să refuzați toate cererile? Această acțiune nu este reversibilă.</p>
+          <p>Sunteți sigur/ă că vreți să refuzați toate cererile? Această acțiune nu este reversibilă.</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
@@ -127,25 +123,21 @@
 <button type="button" class="btn btn-danger position-fixed remove-btn"
         style="bottom: 60px; right: 15px; border-radius: 10px; z-index: 1001;"
         data-bs-toggle="modal" data-bs-target="#confirmRemoveModal">
-    Remove Myself
+      Pune-mă indisponibil/ă
 </button>
 <!-- Modal for Remove Myself -->
 <div class="modal fade" id="confirmRemoveModal" tabindex="-1" aria-labelledby="confirmRemoveModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmRemoveModalLabel">Confirm Remove Myself</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
       <div class="modal-body">
-        <p>Are you sure you want to remove yourself from the system? This action cannot be undone.</p>
+        <p>Sunteți sigur/ă că vreți să deveniți indisponibil/ă pentru studenți?</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
         <!-- Form submission -->
         <form method="post" action="{% url 'remove_myself' %}">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger" id="removeMyselfBtn">Yes, Remove Myself</button>
+          <button type="submit" class="btn btn-danger" id="removeMyselfBtn">Da, pune-mă indisponibil/ă</button>
         </form>
       </div>
     </div>
@@ -158,25 +150,21 @@
 <button type="button" class="btn btn-success position-fixed add-btn"
         style="bottom: 60px; right: 15px; border-radius: 10px; z-index: 1001;"
         data-bs-toggle="modal" data-bs-target="#confirmAddModal">
-    Add Myself
+    Pune-mă disponibil/ă
 </button>
 <!-- Modal for Add Myself -->
 <div class="modal fade" id="confirmAddModal" tabindex="-1" aria-labelledby="confirmAddModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmAddModalLabel">Confirm Add Myself</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
       <div class="modal-body">
-        <p>Are you sure you want to add yourself to the system? This action cannot be undone.</p>
+        <p>Sunteți sigur/ă că vreți să deveniți disponibil/ă pentru studenți?</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
         <!-- Form submission -->
         <form method="post" action="{% url 'add_myself' %}" id="addMyselfForm">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger" id="addMyselfBtn">Yes, Add Myself</button>
+          <button type="submit" class="btn btn-danger" id="addMyselfBtn">Da, pune-mă disponibil/ă</button>
         </form>
       </div>
     </div>

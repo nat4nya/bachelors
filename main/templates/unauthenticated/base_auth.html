@@ -91,16 +91,11 @@
 
     <div class="decorative-bar-right">
         <div class="d-flex justify-content-center align-items-center">
-            {% if user.is_authenticated %}
-                <span class="navbar-text text-white fw-bold me-3">Logged in as {{ user.username }} | </span>
-                <a class="nav-link text-white fw-bold" href="/logout">Logout</a>
+            {% if request.path == '/login/' or request.path == '/sign-up/' %}
+                <a class="nav-link text-white fw-bold" href="/">Back</a>
             {% else %}
-                {% if request.path == '/login/' or request.path == '/sign-up/' %}
-                    <a class="nav-link text-white fw-bold" href="/">Back</a>
-                {% else %}
-                    <a class="nav-link text-white fw-bold me-5" href="/login">Login</a>
-                    <a class="nav-link text-white fw-bold" href="/sign-up">Sign Up</a>
-                {% endif %}
+                <a class="nav-link text-white fw-bold me-5" href="/login">Login</a>
+                <a class="nav-link text-white fw-bold" href="/sign-up">Sign Up</a>
             {% endif %}
         </div>
     </div>
@@ -114,7 +109,7 @@
         </p>
     </div>
 
-    <button class="btn btn-dark position-fixed" style="bottom: 60px; right: 3px; border-radius: 10px; z-index: 1001;" id="darkModeToggle">
+    <button class="btn btn-dark position-fixed" style="bottom: 60px; right: 15px; border-radius: 10px; z-index: 1001;" id="darkModeToggle">
         <span id="darkModeIcon">☀️</span>
     </button>
     

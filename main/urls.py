@@ -7,6 +7,7 @@ urlpatterns = [
     path('main/', views.main, name='main'),\
     path('home-student/', views.home_student, name='home_student'),
     path('home-professor/', views.home_professor, name='home_professor'),
+    path('home-admin/', views.home_admin, name = 'home_admin'),
     path('accept-note/<int:note_id>/', views.accept_note, name='accept_note'),
     path('home-professor/refuse-note/<int:note_id>/', views.refuse_note, name='refuse_note'),  # Updated URL pattern
     path('remove-myself/', views.remove_myself, name='remove_myself'),

@@ -25,11 +25,12 @@
         {% if notifications %}
           {% for notification in notifications %}
             <li class="list-group-item">
-              <strong>Professor:</strong> {{ notification.note.destination.username }}<br>
-              <strong>Note Title:</strong> {{ notification.note.title }}<br>
-              <strong>Date Created:</strong> {{ notification.note.created_at }}<br>
+              <strong>Profesor:</strong> {{ notification.note.destination.username }}<br>
+              <strong>Titlul cererii:</strong> {{ notification.note.title }}<br>
+              <strong>Descriere:</strong> {{ notification.note.description }}<br>
+              <strong>Data:</strong> {{ notification.note.created_at }}<br>
               {% if notification.reason %}
-                <strong>Reason:</strong> {{ notification.reason }}<br>
+                <strong>Motiv:</strong> {{ notification.reason }}<br>
               {% endif %}
             </li>
           {% endfor %}

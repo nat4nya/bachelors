@@ -85,7 +85,7 @@ def reset_password_auth_action(request, uidb64, token):
                 # Mark the token as used
                 UsedPasswordResetToken.objects.create(user=user, token=token)
 
-                messages.success(request, 'Your password has been successfully updated.')
+                messages.success(request, 'Parola a fost resetată cu succes!')
 
                 # Redirect to some success page or any other desired URL
                 return redirect('/')  # Redirect to homepage or another page
@@ -263,6 +263,14 @@ def reset_password_home_action(request):
 
     return redirect('reset_password_home')  # Redirect to reset password page if form submission fails
 
+def home_admin(request):
+    return render(request, 'main/home_admin.html')
+
+
+
+
+
+
 @login_required(login_url='/login')
 @group_required('student')
 @no_accepted_notes_required
@@ -352,11 +360,7 @@ from .models import ProfessorRequest
 @group_required('student')
 def create_note(request):
     user_department_group = request.user.groups.exclude(name='student').first()
-    
-    # Fetch professors excluding those with no_requests=True
     professors = User.objects.filter(groups__name='profesor').exclude(professorrequest__no_requests=True)
-    
-    # Filter professors by department group
     same_dep_professors = [prof for prof in professors if prof.groups.exclude(name='profesor').first() == user_department_group]
 
     if request.method == 'POST':
