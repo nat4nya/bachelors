@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.contrib.auth.views import LoginView
 from .decorators import group_required, logout_required, no_accepted_notes_required, no_pending_notes_required
 from django.contrib.auth.models import User
-from .models import Note, UsedPasswordResetToken, ProfessorRequest
+from .models import Note, UsedToken, ProfessorRequest
 from django.contrib import messages
 from .models import Notification, ProfessorRequest
 from django.http import HttpResponseRedirect
@@ -83,7 +83,7 @@ def reset_password_auth_action(request, uidb64, token):
                 user.save()
 
                 # marcheaza token-ul ca fiind folosit pentru a face link-ul folosit inaccesibil
-                UsedPasswordResetToken.objects.create(user=user, token=token)
+                UsedToken.objects.create(user=user, token=token)
 
                 messages.success(request, 'Parola a fost resetată cu succes!')
 
@@ -109,7 +109,7 @@ def reset_password_auth_page(request, uidb64, token):
         user = None
     
     # verifica daca token-ul a fost folosit deja
-    if UsedPasswordResetToken.objects.filter(user=user, token=token).exists():
+    if UsedToken.objects.filter(user=user, token=token).exists():
         messages.error(request, 'Acest link pentru resetare a fost deja folosit! Vă rog să folosiți un link nou.')
         return redirect('/')
 
@@ -167,6 +167,10 @@ class CustomLoginView(LoginView):
     # se redirectioneaza utilizatorul in functie de grupul in care se afla
     def get_success_url(self):
         user = self.request.user
+        
+        if user.is_superuser:
+            return reverse('home_admin')
+        
         if user.groups.filter(name='student').exists():
             # verifica daca studentul are o cerere acceptata
             if Note.objects.filter(author=user, is_accepted=True).exists():
@@ -201,13 +205,22 @@ def activated(request, uidb64, token):
     except:
         user = None
 
+    # verifica daca token-ul a fost folosit deja
+    if UsedToken.objects.filter(user=user, token=token).exists():
+        messages.error(request, 'Acest link pentru activare a fost deja folosit! Vă rog să folosiți un link nou.')
+        return redirect('/')
+
     # se verifica utilizatorul si token-ul
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True # marcheaza contul ca fiind activ si permite utilizatorului sa il foloseasca
         user.save()
+
+        # marcheaza token-ul ca fiind folosit pentru a face link-ul folosit inaccesibil
+        UsedToken.objects.create(user=user, token=token)
+
         messages.success(request, "Contul ți-a fost activat cu succes! Te poți autentifica.")
     else:
-        messages.error(request, "Link-ul de activare nu este valid!")
+        messages.error(request, "Link-ul de activare nu este valid sau a expirat!")
     return redirect('/main')
 
 # functie de creare a email-ului pentru activarea contului
@@ -277,10 +290,6 @@ def reset_password_home_action(request):
             return redirect('/')
 
     return redirect('reset_password_home')
-
-# interfata administratorului IN LUCRU
-def home_admin(request):
-    return render(request, 'main/home_admin.html')
 
 # interfata studentului
 @login_required(login_url='/login')
@@ -381,7 +390,7 @@ def create_note(request):
                 author = request.user
                 
                 # se verifica daca au fost deja trimise 3 cereri catre un profesor, inclusiv cele refuzate
-                if Note.objects.filter(author=author, destination=professor).count() >= 3:
+                if Note.objects.filter(author=author, destination=professor).count() >= 1:
                     form_errors = "You have already sent 3 requests to this professor."
                 else:
                     # se salveaza cererea
@@ -461,7 +470,7 @@ def remove_myself(request):
             messages.error(request, "Profesorul nu poate fi găsit.")
     return redirect(reverse('home_professor'))
 
-# la fel de ciudat nume dar face fix opusul functiei de mai sus, adica face profesorul valabil.
+# la fel de ciudat nume dar face fix opusul functiei de mai sus, adica face profesorul valabil
 @group_required('profesor')
 @login_required
 def add_myself(request):

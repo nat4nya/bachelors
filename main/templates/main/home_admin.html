@@ -2,6 +2,19 @@
 {% block title %} Admin Home {% endblock %}
 
 {% block content %}
+<style>
+    .form-check-input[type="radio"] {
+        width: 1.2em;
+        height: 1.2em;
+        margin-top: 0.25em;
+        margin-left: 0.5em;
+        margin-right: 0.5em;
+        background-color: #343a40; /* Example blue color */
+    }
+</style>
+
+
+
 <div class="container mt-4">
     <!-- Tab-uri pentru setari -->
     <ul class="nav nav-tabs" id="settings-tab" role="tablist">
@@ -39,16 +52,166 @@
     
     <!-- Continutul fiecarui tab -->
     <div class="tab-content mt-3" id="settings-tabContent">
-        <!-- Toti userii -->
-        <div class="tab-pane fade show active" id="all-users" role="tabpanel" aria-labelledby="all-users-tab">
-            <form>
-                <div class="mb-3">
-                    <label for="user-search" class="form-label">Caută un utilizator</label>
-                    <input type="text" class="form-control" id="user-search" placeholder="Introdu adresa de e-mail sau numele de utilizator">
-                </div>
+
+
+
+
+
+
+
+
+
+
+<!-- Toti userii -->
+<div class="tab-pane fade show active" id="all-users" role="tabpanel" aria-labelledby="all-users-tab">
+    <div class="row align-items-center mb-3">
+        <div class="col-lg-6">
+            <form method="GET" action="{% url 'home_admin' %}" class="d-flex align-items-center">
+                {% csrf_token %}
+                <input type="text" class="form-control me-2" id="user-search" name="search_query" placeholder="Introdu adresa de e-mail sau numele de utilizator" value="{{ user_filter }}">
                 <button type="submit" class="btn btn-primary">Caută</button>
             </form>
         </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col-lg-6">
+            <form method="GET" action="{% url 'home_admin' %}" class="d-flex">
+                {% csrf_token %}
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn {% if selected_user %}btn-primary{% else %}btn-secondary{% endif %} {% if not selected_user %}disabled{% endif %}" name="action" value="action1" data-bs-toggle="collapse" data-bs-target="#resetPasswordAccordion" aria-expanded="false" aria-controls="resetPasswordAccordion">Resetează parola</button>
+                    <button type="submit" class="btn {% if selected_user %}btn-primary{% else %}btn-secondary{% endif %} {% if not selected_user %}disabled{% endif %}" name="action" value="action3">Șterge</button>
+                    <button type="submit" class="btn {% if selected_user %}btn-primary{% else %}btn-secondary{% endif %} {% if not selected_user %}disabled{% endif %}" name="action" value="action4">Schimbă grupuri</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-lg-6">
+            {% if selected_user %}
+                <form method="GET" action="{% url 'home_admin' %}" class="d-flex justify-content-end">
+                    {% csrf_token %}
+                    <div class="btn-group" role="group">
+                        {% if selected_user.is_superuser %}
+                            <button type="submit" class="btn btn-primary" name="action" value="unset_superuser">Scoate administrator</button>
+                        {% else %}
+                            <button type="submit" class="btn btn-primary" name="action" value="set_superuser">Setează administrator</button>
+                        {% endif %}
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6">
+            <div id="resetPasswordAccordion" class="collapse">
+                <div class="card card-body">
+                    <form method="POST" action="{% url 'password_reset_admin' %}">
+                        {% csrf_token %}
+                        <!-- Include selected_user_id as hidden input -->
+                        <input type="hidden" name="selected_user" value="{% if selected_user %}{{ selected_user.id }}{% endif %}">
+                        <!-- Form fields for new password -->
+                        <div class="mb-3">
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="Introdu noua parolă">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Salvare</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    
+
+    <div class="mt-3">
+        <form id="userForm">
+            <div class="table-responsive">
+                <!-- Table structure -->
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">ID</th>
+                            <th scope="col">Nume utilizator</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Ultima autentificare</th>
+                            <th scope="col">Administrator</th>
+                            <th scope="col">Activ</th>
+                            <th scope="col">Data înregistrării</th>
+                            <th scope="col">Grupuri</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="selected_user" id="select_user_{{ user.id }}" value="{{ user.id }}" onchange="this.form.submit()" {% if user.id == selected_user.id %}checked{% endif %}>
+                                    <label class="form-check-label" for="select_user_{{ user.id }}"></label>
+                                </div>
+                            </td>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.last_login }}</td>
+                            <td>{{ user.is_superuser }}</td>
+                            <td>{{ user.is_active }}</td>
+                            <td>{{ user.date_joined }}</td>
+                            <td>
+                                {% for group in user.groups.all %}
+                                    {{ group.name }}
+                                    {% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9">Nu există utilizatori în sistem.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
         <!-- Toate cererile -->
         <div class="tab-pane fade" id="all-notes" role="tabpanel" aria-labelledby="all-notes-tab">
             <form>

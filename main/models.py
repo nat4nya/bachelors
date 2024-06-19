@@ -34,7 +34,7 @@ class ProfessorRequest(models.Model):
         return self.professor.username
 
 # modelul de tine cont daca un e-mail de resetare a parolei a fost folosit sau nu
-class UsedPasswordResetToken(models.Model):
+class UsedToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)

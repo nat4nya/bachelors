@@ -61,3 +61,12 @@ def no_pending_notes_required(view_func):
         return view_func(request, *args, **kwargs)
     
     return _wrapped_view
+
+# numai adminii au voie aci
+def superuser_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_superuser:
+            return view_func(request, *args, **kwargs)
+        return HttpResponseForbidden("Nu ai permisiunea de a accesa această pagină!")
+    return _wrapped_view

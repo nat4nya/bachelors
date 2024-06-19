@@ -71,7 +71,7 @@ EMAIL_HOST_USER = 'akavyoa@gmail.com'
 EMAIL_HOST_PASSWORD = 'xyashjkdjjffozwx'
 
 DEFAULT_FROM_EMAIL = 'noreply<no_reply@domain.com>'
-PASSWORD_RESET_TIMEOUT = 3600
+PASSWORD_RESET_TIMEOUT = 1800 # link-ul e valabil 30 de min
 
 
 MIDDLEWARE = [
