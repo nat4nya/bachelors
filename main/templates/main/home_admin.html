@@ -11,9 +11,20 @@
         margin-right: 0.5em;
         background-color: #343a40; /* Example blue color */
     }
+    .table {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .table td {
+        word-wrap: break-word; /* Allow long words to wrap */
+    }
+
 </style>
-
-
 
 <div class="container mt-4">
     <!-- Tab-uri pentru setari -->
@@ -28,21 +39,6 @@
             <a class="nav-link" id="add-role-department-tab" data-bs-toggle="tab" href="#add-role-department" role="tab" aria-controls="add-role-department" aria-selected="false">Adaugă departament/specializare</a>
         </li>
         <li class="nav-item" role="presentation">
-            <a class="nav-link" id="modify-user-role-tab" data-bs-toggle="tab" href="#modify-user-role" role="tab" aria-controls="modify-user-role" aria-selected="false">Modifică departamentul utilizatorului</a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="modify-note-tab" data-bs-toggle="tab" href="#modify-note" role="tab" aria-controls="modify-note" aria-selected="false">Modifică o cerere</a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="reset-user-password-tab" data-bs-toggle="tab" href="#reset-user-password" role="tab" aria-controls="reset-user-password" aria-selected="false">Resetează parola utilizatorului</a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="add-admin-tab" data-bs-toggle="tab" href="#add-admin" role="tab" aria-controls="add-admin" aria-selected="false">Adaugă admin</a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="remove-user-tab" data-bs-toggle="tab" href="#remove-user" role="tab" aria-controls="remove-user" aria-selected="false">Șterge un utilizator</a>
-        </li>
-        <li class="nav-item" role="presentation">
             <a class="nav-link" id="delete-all-notes-students-tab" data-bs-toggle="tab" href="#delete-all-notes-students" role="tab" aria-controls="delete-all-notes-students" aria-selected="false">Șterge toți studenții și cererile</a>
         </li>
         <li class="nav-item" role="presentation">
@@ -52,155 +48,225 @@
     
     <!-- Continutul fiecarui tab -->
     <div class="tab-content mt-3" id="settings-tabContent">
-
-
-
-
-
-
-
-
-
-
-<!-- Toti userii -->
-<div class="tab-pane fade show active" id="all-users" role="tabpanel" aria-labelledby="all-users-tab">
-    <div class="row align-items-center mb-3">
-        <div class="col-lg-6">
-            <form method="GET" action="{% url 'home_admin' %}" class="d-flex align-items-center">
-                {% csrf_token %}
-                <input type="text" class="form-control me-2" id="user-search" name="search_query" placeholder="Introdu adresa de e-mail sau numele de utilizator" value="{{ user_filter }}">
-                <button type="submit" class="btn btn-primary">Caută</button>
-            </form>
-        </div>
-    </div>
-    
-    <div class="row mb-3">
-        <div class="col-lg-6">
-            <form method="GET" action="{% url 'home_admin' %}" class="d-flex">
-                {% csrf_token %}
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn {% if selected_user %}btn-primary{% else %}btn-secondary{% endif %} {% if not selected_user %}disabled{% endif %}" name="action" value="action1" data-bs-toggle="collapse" data-bs-target="#resetPasswordAccordion" aria-expanded="false" aria-controls="resetPasswordAccordion">Resetează parola</button>
-                    <button type="submit" class="btn {% if selected_user %}btn-primary{% else %}btn-secondary{% endif %} {% if not selected_user %}disabled{% endif %}" name="action" value="action3">Șterge</button>
-                    <button type="submit" class="btn {% if selected_user %}btn-primary{% else %}btn-secondary{% endif %} {% if not selected_user %}disabled{% endif %}" name="action" value="action4">Schimbă grupuri</button>
-                </div>
-            </form>
-        </div>
-        <div class="col-lg-6">
-            {% if selected_user %}
-                <form method="GET" action="{% url 'home_admin' %}" class="d-flex justify-content-end">
-                    {% csrf_token %}
-                    <div class="btn-group" role="group">
-                        {% if selected_user.is_superuser %}
-                            <button type="submit" class="btn btn-primary" name="action" value="unset_superuser">Scoate administrator</button>
-                        {% else %}
-                            <button type="submit" class="btn btn-primary" name="action" value="set_superuser">Setează administrator</button>
-                        {% endif %}
-                    </div>
-                </form>
-            {% endif %}
-        </div>
-    </div>
-    
-    <div class="row">
-        <div class="col-lg-6">
-            <div id="resetPasswordAccordion" class="collapse">
-                <div class="card card-body">
-                    <form method="POST" action="{% url 'password_reset_admin' %}">
+        <!-- Toti userii -->
+        <div class="tab-pane fade show active" id="all-users" role="tabpanel" aria-labelledby="all-users-tab">
+            <div class="row align-items-center mb-3">
+                <div class="col-lg-6">
+                    <form method="GET" action="{% url 'home_admin' %}" class="d-flex align-items-center">
                         {% csrf_token %}
-                        <!-- Include selected_user_id as hidden input -->
-                        <input type="hidden" name="selected_user" value="{% if selected_user %}{{ selected_user.id }}{% endif %}">
-                        <!-- Form fields for new password -->
-                        <div class="mb-3">
-                            <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="Introdu noua parolă">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Salvare</button>
+                        <input type="text" class="form-control me-2" id="user-search" name="user_search_query" placeholder="Cauta un utilizator" value="{{ user_filter }}">
+                        <button type="submit" class="btn btn-primary">Caută</button>
                     </form>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-    
-
-    <div class="mt-3">
-        <form id="userForm">
-            <div class="table-responsive">
-                <!-- Table structure -->
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th scope="col"></th>
-                            <th scope="col">ID</th>
-                            <th scope="col">Nume utilizator</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Ultima autentificare</th>
-                            <th scope="col">Administrator</th>
-                            <th scope="col">Activ</th>
-                            <th scope="col">Data înregistrării</th>
-                            <th scope="col">Grupuri</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user in users %}
-                        <tr>
-                            <td>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="selected_user" id="select_user_{{ user.id }}" value="{{ user.id }}" onchange="this.form.submit()" {% if user.id == selected_user.id %}checked{% endif %}>
-                                    <label class="form-check-label" for="select_user_{{ user.id }}"></label>
-                                </div>
-                            </td>
-                            <td>{{ user.id }}</td>
-                            <td>{{ user.username }}</td>
-                            <td>{{ user.email }}</td>
-                            <td>{{ user.last_login }}</td>
-                            <td>{{ user.is_superuser }}</td>
-                            <td>{{ user.is_active }}</td>
-                            <td>{{ user.date_joined }}</td>
-                            <td>
-                                {% for group in user.groups.all %}
-                                    {{ group.name }}
-                                    {% if not forloop.last %}, {% endif %}
-                                {% endfor %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="9">Nu există utilizatori în sistem.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            
+            <div class="row mb-3">
+                <div class="col-lg-6">
+                    <form method="GET" action="{% url 'home_admin' %}" class="d-flex">
+                        {% csrf_token %}
+                        <input type="hidden" name="selected_user" value="{% if selected_user %}{{ selected_user.id }}{% endif %}">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn {% if selected_user %}btn-primary{% else %}btn-secondary{% endif %} {% if not selected_user %}disabled{% endif %}" name="action" data-bs-toggle="collapse" data-bs-target="#resetPasswordAccordion" aria-expanded="false" aria-controls="resetPasswordAccordion">Resetează parola</button>
+                            <button type="submit" class="btn {% if selected_user %}btn-primary{% else %}btn-secondary{% endif %} {% if not selected_user %}disabled{% endif %}" name="action" value="delete_users_notes">Șterge</button>
+                            <button type="submit" class="btn {% if selected_user %}btn-primary{% else %}btn-secondary{% endif %} {% if not selected_user %}disabled{% endif %}" name="action" value="change_groups_roles">Schimbă grupuri</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-lg-6">
+                    {% if selected_user %}
+                        <form method="GET" action="{% url 'home_admin' %}" class="d-flex justify-content-end">
+                            {% csrf_token %}
+                            <input type="hidden" name="selected_user" value="{% if selected_user %}{{ selected_user.id }}{% endif %}">
+                            <div class="btn-group" role="group">
+                                {% if selected_user.is_superuser %}
+                                    <button type="submit" class="btn btn-primary" name="action" value="unset_superuser">Scoate administrator</button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-primary" name="action" value="set_superuser">Setează administrator</button>
+                                {% endif %}
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
             </div>
-        </form>
-    </div>
-</div>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div id="resetPasswordAccordion" class="collapse">
+                        <div class="card card-body">
+                            <form method="POST" action="{% url 'password_reset_admin' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="selected_user" value="{% if selected_user %}{{ selected_user.id }}{% endif %}">
+                                <div class="mb-3">
+                                    <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="Introdu noua parolă">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Salvare</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- DE BAGAT MODIFICARE DEPARTAMENT AND STUFF -->
+            <div class="mt-3">
+                <form id="userForm">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col"></th>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Nume utilizator</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Ultima autentificare</th>
+                                    <th scope="col">Administrator</th>
+                                    <th scope="col">Activ</th>
+                                    <th scope="col">Data înregistrării</th>
+                                    <th scope="col">Grupuri</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="selected_user" id="select_user_{{ user.id }}" value="{{ user.id }}" onchange="this.form.submit()" {% if user.id == selected_user.id %}checked{% endif %}>
+                                            <label class="form-check-label" for="select_user_{{ user.id }}"></label>
+                                        </div>
+                                    </td>
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.last_login }}</td>
+                                    <td>{{ user.is_superuser }}</td>
+                                    <td>{{ user.is_active }}</td>
+                                    <td>{{ user.date_joined }}</td>
+                                    <td>
+                                        {% for group in user.groups.all %}
+                                            {{ group.name }}
+                                            {% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9">Nu există utilizatori în sistem.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Toate cererile -->
+        <div class="tab-pane fade" id="all-notes" role="tabpanel" aria-labelledby="all-notes-tab">
+            <div class="row align-items-center mb-3">
+                <div class="col-lg-6">
+                    <form method="GET" action="{% url 'home_admin' %}" class="d-flex align-items-center">
+                        {% csrf_token %}
+                        <input type="text" class="form-control me-2" id="note-search" name="note_search_query" placeholder="Caută o cerere după student, profesor sau titlu" value="{{ note_filter }}">
+                        <button type="submit" class="btn btn-primary">Caută</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Student</th>
+                                <th scope="col">Profesor</th>
+                                <th scope="col">Titlu</th>
+                                <th scope="col">Acceptat</th>
+                                <th scope="col">Refuzat</th>
+                                <th scope="col">Data creării</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for note in notes %}
+                            <tr>
+                                <td>{{ note.id }}</td>
+                                <td>{{ note.author }}</td>
+                                <td>{{ note.destination }}</td>
+                                <td>{{ note.title }}</td>
+                                <td>{{ note.is_accepted }}</td>
+                                <td>{{ note.is_refused }}</td>
+                                <td>{{ note.created_at }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8">Nu există note în sistem.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        
 
 
 
 
 
+        <!-- Departamente si specializari -->
+        <div class="tab-pane fade" id="add-role-department" role="tabpanel" aria-labelledby="add-role-department-tab">
+
+
+            <form method="post" action="{% url 'add_department' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="department-name" class="form-label">Adaugă departament</label>
+                    <input type="text" class="form-control" id="department-name" name="department_name" placeholder="Introdu numele noului departament">
+                </div>
+                <button type="submit" class="btn btn-primary">Adaugă departament</button>
+            </form>
+            
+            
+
+
+            <h4 class="mt-4">Adaugă o specializare departamentului</h4>
+            <form method="post" action="{% url 'add_specialization' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="department-select" class="form-label">Selectează departamentul</label>
+                    <select class="form-select" id="department-select" name="department_id">
+                        <option selected>-</option>
+                        {% for department in departments %}
+                            <option value="{{ department.id }}">{{ department.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="email-rule" class="form-label">Specializarea (după e-mail)</label>
+                    <input type="text" class="form-control" id="email-rule" name="specialization_name" placeholder="Adaugă specializarea">
+                </div>
+                <div class="mb-3">
+                    <label for="number-of-years" class="form-label">Numărul de ani</label>
+                    <input type="number" class="form-control" id="number-of-years" name="number_of_years" placeholder="Introdu numărul de ani">
+                </div>
+                <button type="submit" class="btn btn-primary">Adaugă</button>
+            </form>
+            
+        </div>
 
 
 
 
-
-
-
-
+        <!-- Sterge toate cererile si utilizatorii -->
+        <div class="tab-pane fade" id="delete-all-notes-students" role="tabpanel" aria-labelledby="delete-all-notes-students-tab">
+            <h4 class="text-danger">Delete All Notes and Students</h4>
+            <form method="POST" action="{% url 'delete_all_users_notes' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <p class="text-danger">Această acțiune este ireversibilă!</p>
+                    <button type="submit" class="btn btn-danger">Șterge</button>
+                </div>
+            </form>
+        </div>
 
 
 
@@ -212,113 +278,6 @@
 
 
         
-        <!-- Toate cererile -->
-        <div class="tab-pane fade" id="all-notes" role="tabpanel" aria-labelledby="all-notes-tab">
-            <form>
-                <div class="mb-3">
-                    <label for="note-search" class="form-label">Caută o cerere</label>
-                    <input type="text" class="form-control" id="note-search" placeholder="Caută o cerere după student sau profesor">
-                </div>
-                <button type="submit" class="btn btn-primary">Caută</button>
-            </form>
-        </div>
-        <!-- Departamente si specializari -->
-        <div class="tab-pane fade" id="add-role-department" role="tabpanel" aria-labelledby="add-role-department-tab">
-            <form>
-                <div class="mb-3">
-                    <label for="department-name" class="form-label">Adaugă departament</label>
-                    <input type="text" class="form-control" id="department-name" placeholder="Introdu numele noului departament">
-                </div>
-                <button type="submit" class="btn btn-primary">Adaugă departament</button>
-            </form>
-            
-            <h4 class="mt-4">Adaugă o specializare departamentului</h4>
-            <form>
-                <div class="mb-3">
-                    <label for="department-select" class="form-label">Selectează departamentul</label>
-                    <select class="form-select" id="department-select">
-                        <option selected>-</option>
-                        <!-- Options should be dynamically generated based on available departments -->
-                        <option value="informatics">Opțiune 1</option>
-                        <option value="mathematics">Opțiune 2</option>
-                        <!-- Add more options as needed -->
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="email-rule" class="form-label">Specializarea (după e-mail)</label>
-                    <input type="text" class="form-control" id="email-rule" placeholder="Adaugă specializarea">
-                </div>
-                <button type="submit" class="btn btn-primary">Adaugă</button>
-            </form>
-        </div>
-        <!-- Modifica departamentul utilizatorului -->
-        <div class="tab-pane fade" id="modify-user-role" role="tabpanel" aria-labelledby="modify-user-role-tab">
-            <form>
-                <div class="mb-3">
-                    <label for="user-email" class="form-label">E-mail-ul utilizatorului</label>
-                    <input type="email" class="form-control" id="user-email" placeholder="Introdu e-mail-ul utilizatorului">
-                </div>
-                <button type="submit" class="btn btn-primary">Modifică rolul</button>
-            </form>
-        </div>
-        <!-- Modifica cererea -->
-        <div class="tab-pane fade" id="modify-note" role="tabpanel" aria-labelledby="modify-note-tab">
-            <form>
-                <div class="mb-3">
-                    <label for="note-id" class="form-label">ID-ul cererii</label>
-                    <input type="text" class="form-control" id="note-id" placeholder="Introdu ID-ul cererii">
-                </div>
-                <button type="submit" class="btn btn-primary">Modifică</button>
-            </form>
-        </div>
-        <!-- Resetare parola -->
-        <div class="tab-pane fade" id="reset-user-password" role="tabpanel" aria-labelledby="reset-user-password-tab">
-            <form>
-                <div class="mb-3">
-                    <label for="user-id" class="form-label">E-mail-ul utilizatorului</label>
-                    <input type="text" class="form-control" id="user-id" placeholder="Introdu e-mail-ul utilizatorului">
-                </div>
-                <div class="mb-3">
-                    <label for="new-password" class="form-label">Parolă nouă</label>
-                    <input type="password" class="form-control" id="new-password" placeholder="Introdu noua parolă">
-                </div>
-                <div class="mb-3">
-                    <label for="confirm-new-password" class="form-label">Confirmă parola nouă</label>
-                    <input type="password" class="form-control" id="confirm-new-password" placeholder="Introdu noua parolă pentru confirmare">
-                </div>
-                <button type="submit" class="btn btn-primary">Resetează parola</button>
-            </form>
-        </div>
-        <!-- Adaugare admin -->
-        <div class="tab-pane fade" id="add-admin" role="tabpanel" aria-labelledby="add-admin-tab">
-            <form>
-                <div class="mb-3">
-                    <label for="admin-email" class="form-label">E-mail-ul adminului</label>
-                    <input type="email" class="form-control" id="admin-email" placeholder="Introdu e-mail-ul noului admin">
-                </div>
-                <button type="submit" class="btn btn-primary">Adaugă</button>
-            </form>
-        </div>
-        <!-- Sterge utilizator -->
-        <div class="tab-pane fade" id="remove-user" role="tabpanel" aria-labelledby="remove-user-tab">
-            <form>
-                <div class="mb-3">
-                    <label for="remove-user-id" class="form-label">ID-ul utilizatorului</label>
-                    <input type="text" class="form-control" id="remove-user-id" placeholder="Introdu ID-ul utilizatorului">
-                </div>
-                <button type="submit" class="btn btn-danger">Șterge utilizatorul</button>
-            </form>
-        </div>
-        <!-- Sterge toate cererile si utilizatorii -->
-        <div class="tab-pane fade" id="delete-all-notes-students" role="tabpanel" aria-labelledby="delete-all-notes-students-tab">
-            <h4 class="text-danger" >Delete All Notes and Students</h4>
-            <form>
-                <div class="mb-3">
-                    <p class="text-danger">Această acțiune este ireversibilă!</p>
-                    <button type="submit" class="btn btn-danger">Șterge</button>
-                </div>
-            </form>
-        </div>
         <!-- Istoric -->
         <div class="tab-pane fade" id="logs" role="tabpanel" aria-labelledby="logs-tab">
             <form>

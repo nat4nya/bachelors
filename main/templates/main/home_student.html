@@ -1,5 +1,6 @@
 {% extends 'main/base_home.html' %}
 {% block title %} Pagina principala a studentului {% endblock %}
+
 {% block content %}
 <div class="container">
   <div class="row justify-content-center mt-5">
@@ -8,9 +9,9 @@
         <a href="{% url 'create_note' %}" class="btn btn-primary">Trimite o cerere</a>
       </div>
       <ul class="mt-3">
-      <!-- Afisarea tuturor cererilor trimise -->
+        <!-- Afisarea tuturor cererilor trimise -->
         {% for note in notes_sent %}
-        <li>{{ note.title }} - {{ note.description }} - Trimis lui: {{ note.destination.username }}</li>
+        <li class="note-item">{{ note.title }} - {{ note.description }} - Trimis lui: {{ note.destination.username }}</li>
         {% endfor %}
       </ul>
     </div>
