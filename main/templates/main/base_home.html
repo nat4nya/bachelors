@@ -110,11 +110,11 @@
     </div>
 
     <!-- Notificari -->
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8 d-flex justify-content-center">
+    <div class="position-fixed w-100" style="top: 60px; z-index: 2000;">
+        <div class="d-flex justify-content-center">
+            <div class="col-md-8">
                 {% if messages %}
-                    <div class="alert alert-success alert-dismissible fade show position-absolute" style="bottom: 50px; width: 50%;" role="alert">
+                    <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
                         {% for message in messages %}
                             {{ message }}
                         {% endfor %}
@@ -124,6 +124,8 @@
             </div>
         </div>
     </div>
+
+
     
     <!-- Panou principal -->
     <div class="container mt-4">

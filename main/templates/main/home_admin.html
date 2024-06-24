@@ -207,14 +207,8 @@
         </div>
         
         
-
-
-
-
-
         <!-- Departamente si specializari -->
         <div class="tab-pane fade" id="add-role-department" role="tabpanel" aria-labelledby="add-role-department-tab">
-
 
             <form method="post" action="{% url 'add_department' %}">
                 {% csrf_token %}
@@ -224,10 +218,6 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Adaugă departament</button>
             </form>
-            
-            
-
-
             <h4 class="mt-4">Adaugă o specializare departamentului</h4>
             <form method="post" action="{% url 'add_specialization' %}">
                 {% csrf_token %}
@@ -241,8 +231,8 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="email-rule" class="form-label">Specializarea (după e-mail)</label>
-                    <input type="text" class="form-control" id="email-rule" name="specialization_name" placeholder="Adaugă specializarea">
+                    <label for="specialization-name" class="form-label">Specializarea (după e-mail)</label>
+                    <input type="text" class="form-control" id="specialization-name" name="specialization_name" placeholder="Adaugă specializarea">
                 </div>
                 <div class="mb-3">
                     <label for="number-of-years" class="form-label">Numărul de ani</label>
@@ -250,10 +240,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Adaugă</button>
             </form>
-            
         </div>
-
-
 
 
         <!-- Sterge toate cererile si utilizatorii -->
@@ -269,15 +256,6 @@
         </div>
 
 
-
-
-
-
-
-
-
-
-        
         <!-- Istoric -->
         <div class="tab-pane fade" id="logs" role="tabpanel" aria-labelledby="logs-tab">
             <form>

@@ -7,6 +7,7 @@
     <div class="mb-3">
         <label for="destination" class="form-label">Selecteaza profesorul:</label>
         <select class="form-select" id="destination" name="destination">
+            <option selected>-</option>
             {% for professor in professors %}
             <option value="{{ professor.id }}">{{ professor.username }}</option>
             {% endfor %}

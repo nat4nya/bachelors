@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 from .decorators import superuser_required
 from django.contrib.auth.models import User, Group
@@ -19,6 +18,7 @@ def home_admin(request):
     notes = Note.objects.all()
     selected_user_id = request.GET.get('selected_user')
     selected_user = User.objects.filter(id=selected_user_id).first()
+    departments = Department.objects.all()
     user_filter = ''
     note_filter = ''
 
@@ -51,9 +51,11 @@ def home_admin(request):
         'selected_user': selected_user,
         'user_filter': user_filter,  # Ensure search_query is added to the context
         'note_filter': note_filter,  # Ensure note_filter is added to the context
+        'departments': departments
     }
     return render(request, 'main/home_admin.html', context)
 
+# in curs de verificare
 def delete_all_users_notes(request):
     if request.method == 'POST':
         try:
@@ -80,8 +82,7 @@ def password_reset_admin(request):
         selected_user = User.objects.filter(id=selected_user_id).first()
 
         if selected_user:
-            hashed_password = make_password(new_password)
-            selected_user.set_password(hashed_password)
+            selected_user.set_password(new_password)
             selected_user.is_active = True
             selected_user.save()
             messages.success(request, 'Parola a fost salvată cu succes!')
@@ -145,19 +146,17 @@ def add_specialization(request):
         number_of_years = request.POST.get('number_of_years')
 
         if department_id and specialization_name and number_of_years:
+            print("hai sa vedem daca merge")
             department = Department.objects.get(id=department_id)
-            specialization = Specialization.objects.create(
+            Specialization.objects.create(
                 department=department,
                 name=specialization_name,
                 number_of_years=int(number_of_years)
             )
-            # Optionally, you can add success messages or perform other actions
+            messages.success(request, 'Specializarea a fost adăugată cu succes!')
             return redirect('home_admin')  # Redirect to a relevant page after adding
-
-    departments = Department.objects.all()  # Query all departments
-    context = {
-        'departments': departments,
-    }
+        else:
+            messages.error(request, "A apărut o eroare! Sunteți rugați să completați toate câmpurile!")
 
     return render(request, 'main/home_admin.html')
 

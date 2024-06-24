@@ -6,10 +6,10 @@ from .forms import RegisterForm, NoteForm
 from django.urls import reverse
 from django.contrib.auth.views import LoginView
 from .decorators import group_required, logout_required, no_accepted_notes_required, no_pending_notes_required
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .models import Note, UsedToken, ProfessorRequest
 from django.contrib import messages
-from .models import Notification, ProfessorRequest
+from .models import Notification, ProfessorRequest, Specialization
 from django.http import HttpResponseRedirect
 import logging
 from .tokens import account_activation_token, reset_password_token
@@ -20,6 +20,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.password_validation import validate_password, ValidationError
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -164,13 +165,31 @@ class CustomLoginView(LoginView):
         context['page_name'] = "Autentificare"  # seteaza numele paginii
         return context
 
+    def is_student(self, email):
+        username = email.split('@')[0]
+        username_parts = username.split('.')
+        if len(username_parts) < 3:
+            # user-ul nu e student
+            return False
+        return True
+    
+    def has_groups(self, user):
+        if user.groups.count() == 2:
+            return True
+        return False
+
     # se redirectioneaza utilizatorul in functie de grupul in care se afla
     def get_success_url(self):
         user = self.request.user
-        
+        email = user.email
+
         if user.is_superuser:
             return reverse('home_admin')
         
+        if not self.is_student(email) and not self.has_groups(user):
+            messages.success(self.request, "Sunteți rugat să contactați suportul pentru a vi se atribui rolurile necesare!")
+            return reverse('main')
+
         if user.groups.filter(name='student').exists():
             # verifica daca studentul are o cerere acceptata
             if Note.objects.filter(author=user, is_accepted=True).exists():
@@ -250,13 +269,84 @@ def sign_up(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False # contul se salveaza ca fiind inactiv pana se activeaza prin e-mail
+            email = form.cleaned_data.get('email')
             user.save()
+
+            is_student_email(request, email, user)
+                
             # se cheama functia ce se ocupa cu e-mail-ul de activare
             activateEmail(request, user, form.cleaned_data.get('email'))
             return redirect('/main')
     else:
         form = RegisterForm()
     return render(request, 'unauthenticated/sign_up.html', {"form": form, "page_name": page_name})
+
+def add_student_to_group(specialization_obj, user):
+    try:
+        student_group = Group.objects.get(name='student')  # Ensure 'student' group exists
+        user.groups.add(student_group)
+        # Retrieve the specialization object from the database
+        department_name = specialization_obj.department.name
+        # Check if a group with the department name exists, create if not
+        department_group, created = Group.objects.get_or_create(name=department_name)
+        # Add the user to the department group
+        user.groups.add(department_group)
+    except Exception as e:
+        print(f"O eroare a apărut la adăugarea studentului în grup: {e}")
+
+def is_final_year(request, specialization, year, user):
+    try: 
+    # Assuming the logic to determine final year based on specialization and year
+    # Example logic: Consider 'info' as final year if year ends with '21', otherwise not final year
+        specialization_obj = Specialization.objects.get(name=specialization)
+        number_of_years = specialization_obj.number_of_years
+
+        current_year = datetime.now().year + 1
+        last_two_digits_current_year = current_year % 100
+
+        # Calculate the difference between the current year and the student's start year
+        year_difference = last_two_digits_current_year - int(year)
+
+        # Check if the year difference matches the number of years for the specialization
+        if year_difference >= number_of_years:
+            add_student_to_group(specialization_obj, user)
+        else:
+            user.delete()
+            messages.error(request, 'Studentul nu este în anul final! Utilizatorul a fost șters din baza de date.')
+
+    except Specialization.DoesNotExist:
+        print(f"Specializarea '{specialization}' nu există în baza de date.")
+
+
+def is_student_email(request, email, user):
+    # Split the email address by '@' and extract the username part
+    username = email.split('@')[0]
+    domain = email.split('@')[1]
+    
+    # Split the username by '.' to get parts
+    username_parts = username.split('.')
+    domain_parts = domain.split('.')
+
+    # Check if the last part is 'uab.ro'
+    if len(domain_parts) == 2 and domain_parts[0] == 'uab' and domain_parts[1] == 'ro':
+        # Initialize variables to store specialization and year
+        specialization = ""
+        year = ""
+        
+        # Iterate through parts to find the specialization and year
+        for part in reversed(username_parts):
+            # Check if part contains both letters and digits
+            if any(char.isdigit() for char in part) and any(char.isalpha() for char in part):
+                # Separate letters and digits
+                for i in range(len(part)):
+                    if part[i].isdigit():
+                        year = part[i:]  # Extract all digits as year
+                        specialization = part[:i]  # Extract letters as specialization
+                        break
+                    if specialization and year:
+                        break
+        is_final_year(request, specialization, year, user)
+    
 
 # PAGINI PRINCIPALE
 # functie de chenare a paginii unde se face resetarea de parola, in interfata
@@ -391,7 +481,7 @@ def create_note(request):
                 
                 # se verifica daca au fost deja trimise 3 cereri catre un profesor, inclusiv cele refuzate
                 if Note.objects.filter(author=author, destination=professor).count() >= 1:
-                    form_errors = "You have already sent 3 requests to this professor."
+                    form_errors = "Au fost trimisă deja o cerere acestui profesor."
                 else:
                     # se salveaza cererea
                     note = form.save(commit=False)
