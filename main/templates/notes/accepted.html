@@ -1,5 +1,5 @@
 {% extends 'main/base_home.html' %}
-{% block title %} Cereri acceptate {% endblock %}
+{% block title %} Pagina studentului - acceptat {% endblock %}
 
 {% block content %}
 <style>
@@ -28,28 +28,27 @@
 </style>
 
 {% block fireworks-animation %}
-<!-- Artificii -->
-<!-- Fireworks container -->
+<!-- artificii -->
 <div class="fireworks-container" id="fireworks-container"></div>
 
-<!-- Script pentru artificii -->
+<!-- script pentru artificii -->
 <script src="https://unpkg.com/fireworks-js@2.x/dist/index.umd.js"></script>
 <script>
-  // Asteapta ca continutul DOM sa fie incarcat
+  // asteapta ca continutul DOM sa fie incarcat
   document.addEventListener('DOMContentLoaded', function () {
-    // Initializarea containerului pentru artificii
+    // initializarea containerului pentru artificii
     var container = document.getElementById('fireworks-container');
     
-    // Initializarea animatiei de artificii
+    // initializarea animatiei de artificii
     var fireworks = new Fireworks.default(container);
     
-    // Pornirea animatiei de artificii
+    // pornirea animatiei de artificii
     fireworks.start();
   });
 </script>
 {% endblock %}
 
-<!-- Container for Felicitari -->
+<!-- container pentru felicitari -->
 <div class="container">
   <div class="row justify-content-center mt-5">
     <div class="col-md-6">
@@ -57,7 +56,7 @@
         <h2 class="text-center"> Felicitări! Cererea ta a fost acceptată! </h2>
       </div>
       <ul class="list-unstyled">
-        <!-- Afisarea cererii acceptate -->
+        <!-- afisarea cererii acceptate -->
         {% for note in accepted_notes %}
         <li style="font-size: 18px;">
           {{ note.title }} - {{ note.description }} 

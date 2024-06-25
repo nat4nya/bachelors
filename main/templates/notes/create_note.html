@@ -1,6 +1,7 @@
 {% extends 'main/base_home.html' %}
 {% block title %} Creează o cerere {% endblock %}
 {% load crispy_forms_tags %}
+
 {% block content %}
 <form method="post">
     {% csrf_token %}

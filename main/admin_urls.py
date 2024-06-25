@@ -1,6 +1,7 @@
 from django.urls import path
 from . import admin_views  # Import your admin views module
 
+# toate urls din admin_views.py
 urlpatterns = [
     path('home-admin/', admin_views.home_admin, name = 'home_admin'),
     path('password-reset-admin/', admin_views.password_reset_admin, name='password_reset_admin'),
@@ -10,6 +11,5 @@ urlpatterns = [
     path('delete-all-users-notes/', admin_views.delete_all_users_notes, name='delete_all_users_notes'),
     path('add_department/', admin_views.add_department, name='add_department'),
     path('add_specialization/', admin_views.add_specialization, name='add_specialization'),
-    path('logs/', admin_views.view_logs, name='view_logs'),
     path('delete-all-logs/', admin_views.delete_all_logs, name='delete_all_logs'),
 ]

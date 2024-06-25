@@ -5,7 +5,7 @@
 
 {% block inner_panel_content %}
     <form method="post">
-        {% csrf_token %}
+        {% csrf_token %} 
         <!-- Form pentru autentificare -->
         {{ form|crispy }}
         <p> Creează un cont <a href="/sign-up">aici</a>!</p>

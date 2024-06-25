@@ -65,7 +65,7 @@ EMAIL_HOST_PASSWORD = 'xyashjkdjjffozwx'
 DEFAULT_FROM_EMAIL = 'noreply<no_reply@domain.com>'
 PASSWORD_RESET_TIMEOUT = 1800 # link-ul e valabil 30 de min
 
-# sa-mi ia data buna la log-uri
+# sa-mi dea data buna la log-uri
 TIME_ZONE = 'Europe/Bucharest'
 USE_TZ = True
 

@@ -255,7 +255,7 @@ def activateEmail(request, user, to_email):
     })
     email = EmailMessage(mail_subject, message, to = [to_email])
     if email.send():
-        messages.success(request, "Link-ul de verificare a fost trimis cu succes!")
+        messages.success(request, "Link-ul de verificare a fost trimis cu succes! TIPS: verificați folder-ul de spam!")
     else:
         messages.error(request, "Am întâmpinat o problemă încercând să trimitem link-ul de verificare! Vă rugăm încercați mai târziu.")
 

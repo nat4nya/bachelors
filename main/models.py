@@ -10,7 +10,7 @@ class Note(models.Model):
     description = models.TextField(max_length=1500)
     created_at = models.DateTimeField(auto_now_add=True)
     is_accepted = models.BooleanField(default=False)
-    is_refused = models.BooleanField(default=False)  # New field for refused notes
+    is_refused = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Cerere de la {self.author} adresata lui {self.destination}: {self.title}"

@@ -36,7 +36,6 @@ def logout_required(redirect_url=None):
 def no_accepted_notes_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        # Check if the user has any accepted notes
         if Note.objects.filter(author=request.user, is_accepted=True).exists():
             return HttpResponseForbidden("Nu ai permisiunea de a accesa acesta pagina!")
         return view_func(request, *args, **kwargs)
@@ -46,23 +45,19 @@ def no_accepted_notes_required(view_func):
 def no_pending_notes_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        # Get all notes for the user
         user_notes = Note.objects.filter(author=request.user)
-        # Loop through the notes to check if any is accepted
         is_pending = True
         for note in user_notes:
             if note.is_accepted:
                 is_pending = False
                 break
-                
         if is_pending:
             return HttpResponseForbidden("Nu ai permisiunea de a accesa acesta pagina!")
-        # If no accepted notes are found, proceed to the original view
         return view_func(request, *args, **kwargs)
     
     return _wrapped_view
 
-# numai adminii au voie aci
+# numai adminii au voie aici
 def superuser_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
