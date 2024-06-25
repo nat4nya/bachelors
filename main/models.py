@@ -55,3 +55,11 @@ class Specialization(models.Model):
 
     def __str__(self):
         return self.name
+    
+# pentru istoric in pagina de admin
+class ActivityLog(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    action = models.CharField(max_length=500)
+
+    def __str__(self):
+        return f'{self.timestamp} - {self.action}'

@@ -9,9 +9,8 @@ from .decorators import group_required, logout_required, no_accepted_notes_requi
 from django.contrib.auth.models import User, Group
 from .models import Note, UsedToken, ProfessorRequest
 from django.contrib import messages
-from .models import Notification, ProfessorRequest, Specialization
+from .models import Notification, ProfessorRequest, Specialization, ActivityLog
 from django.http import HttpResponseRedirect
-import logging
 from .tokens import account_activation_token, reset_password_token
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
@@ -21,8 +20,8 @@ from django.core.mail import EmailMessage
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.password_validation import validate_password, ValidationError
 from datetime import datetime
-
-logger = logging.getLogger(__name__)
+import pytz
+from django.utils import timezone
 
 
 # VERIFICARE PAROLA MANUAL
@@ -87,6 +86,7 @@ def reset_password_auth_action(request, uidb64, token):
                 UsedToken.objects.create(user=user, token=token)
 
                 messages.success(request, 'Parola a fost resetată cu succes!')
+                ActivityLog.objects.create(action = f'Utilizatorul {user} și-a resetat parola.')
 
                 # redirectioneaza catre pagina principala
                 return redirect('/')
@@ -238,6 +238,7 @@ def activated(request, uidb64, token):
         UsedToken.objects.create(user=user, token=token)
 
         messages.success(request, "Contul ți-a fost activat cu succes! Te poți autentifica.")
+        ActivityLog.objects.create(action = f'Utilizatorul {user} și-a activat contul.')
     else:
         messages.error(request, "Link-ul de activare nu este valid sau a expirat!")
     return redirect('/main')
@@ -377,6 +378,7 @@ def reset_password_home_action(request):
             # refresh la pagina
             update_session_auth_hash(request, user)
             messages.success(request, 'Parola ta a fost modificata cu succes!')
+            ActivityLog.objects.create(action = f'Utilizatorul {user} și-a resetat parola.')
             return redirect('/')
 
     return redirect('reset_password_home')
@@ -459,6 +461,10 @@ def accept_note(request, note_id):
             other_note.is_refused = True
             other_note.save()
 
+            professor_name = request.user.username
+            student_name = request.author.username
+            ActivityLog.objects.create(action = f'Profesorul {professor_name} a acceptat cererea studentului {student_name}.')
+
     return redirect('home_professor')  # Redirect back to the professor's home page
 
 # CERERI DE LICENTA/DISERATIE
@@ -488,6 +494,7 @@ def create_note(request):
                     note.author = author
                     note.destination = professor
                     note.save()
+                    ActivityLog.objects.create(action = f'Studentul {author} a trimis o cerere profesorului {professor}.')
                     return redirect("/home-student")
         else:
             form_errors = "Vă rugăm să vă corectați erorile."
@@ -525,6 +532,9 @@ def refuse_note(request, note_id):
                 # creeaza o notificare pentru student
                 Notification.objects.create(note=note, reason=reason)
 
+                professor_name = request.user.username
+                student_name = note.author.username
+                ActivityLog.objects.create(action = f'Profesorul {professor_name} a respins cererea studentului {student_name}.')
                 messages.success(request, "Cererea a fost respinsă cu succes!")
             except Note.DoesNotExist:
                 messages.error(request, "Cererea nu există.")
@@ -540,6 +550,9 @@ def refuse_all_requests(request):
     try:
         # marcheaza toate cererile ca fiind refuzate
         notes_to_refuse.update(is_refused=True)
+
+        professor_name = request.user.username
+        ActivityLog.objects.create(action = f'Profesorul {professor_name} a refuzat toate cererile de licență.')
     except Exception as e:
         messages.error(request, f"A apărut o eroare în timpul refuzării tuturor cererilor: {str(e)}")
 
@@ -556,6 +569,9 @@ def remove_myself(request):
             professor_request.no_requests = True
             professor_request.save()
             messages.success(request, "Nu vei mai primi cereri de licență!")
+
+            professor_name = request.user.username
+            ActivityLog.objects.create(action = f'Profesorul {professor_name} nu va mai primi cereri.')
         except ProfessorRequest.DoesNotExist:
             messages.error(request, "Profesorul nu poate fi găsit.")
     return redirect(reverse('home_professor'))
@@ -571,6 +587,9 @@ def add_myself(request):
             professor_request.no_requests = False
             professor_request.save()
             messages.success(request, "Vei primi de acum cereri de licență!")
+
+            professor_name = request.user.username
+            ActivityLog.objects.create(action = f'Profesorul {professor_name} va primi cereri.')
         except ProfessorRequest.DoesNotExist:
             messages.error(request, "Profesorul nu poate fi găsit.")
     return redirect(reverse('home_professor'))

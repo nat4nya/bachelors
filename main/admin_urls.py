@@ -10,4 +10,6 @@ urlpatterns = [
     path('delete-all-users-notes/', admin_views.delete_all_users_notes, name='delete_all_users_notes'),
     path('add_department/', admin_views.add_department, name='add_department'),
     path('add_specialization/', admin_views.add_specialization, name='add_specialization'),
+    path('logs/', admin_views.view_logs, name='view_logs'),
+    path('delete-all-logs/', admin_views.delete_all_logs, name='delete_all_logs'),
 ]

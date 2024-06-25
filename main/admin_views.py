@@ -3,21 +3,47 @@ from django.contrib.auth import get_user_model
 from django.contrib import messages
 from .decorators import superuser_required
 from django.contrib.auth.models import User, Group
-from .models import Note, Department, Specialization
+from .models import Note, Department, Specialization, ActivityLog
+from django.urls import reverse
+import pytz
 
 User = get_user_model()
-
 def select_user(request, user_id):
     # Handle the selection of a user
     # For example, redirect or set session variable
     return redirect('home_admin')
 
+def view_logs(request):
+    if request.method == 'POST':
+        day = request.POST.get('day')
+        month = request.POST.get('month')
+        
+        if day and month:
+            try:
+                day = int(day)
+                month = int(month)
+                logs = ActivityLog.objects.filter(timestamp__day=day, timestamp__month=month).order_by('-timestamp')
+            except ValueError:
+                logs = []
+        else:
+            logs = ActivityLog.objects.all().order_by('-timestamp')[:50]  # Default: Get latest 50 entries
+        
+        # Redirect back to home_admin with filtered logs in query parameters
+        return redirect(reverse('home_admin') + f'?day={day}&month={month}')
+
+    # If not POST, redirect to home_admin with no changes
+    return redirect('home_admin')
+
+def delete_all_logs(request):
+    ActivityLog.objects.all().delete()
+    return redirect('home_admin')
+
 @superuser_required
 def home_admin(request):
-
-
     users = User.objects.all()
     notes = Note.objects.all()
+    logs = ActivityLog.objects.all()
+
     if request.method == 'POST':
         selected_user_id = request.POST.get('selected_user')
     elif request.method == 'GET':
@@ -54,14 +80,14 @@ def home_admin(request):
             change_user_groups(request, selected_user)
             return redirect('home_admin')  # Redirect after processing POST request
         
-
     context = {
         'users': users,
         'notes': notes,
         'selected_user': selected_user,
         'user_filter': user_filter,  # Ensure search_query is added to the context
         'note_filter': note_filter,  # Ensure note_filter is added to the context
-        'departments': departments
+        'departments': departments,
+        'activity_logs': logs
     }
     return render(request, 'main/home_admin.html', context)
 
@@ -85,7 +111,9 @@ def change_user_groups(request, user):
     department_group_name = department.name
     department_group, created = Group.objects.get_or_create(name=department_group_name)
     user.groups.add(department_group)
-    print("eeeeeeeeeeeeeeeeeeee")
+    
+    administrator_name = request.user.username
+    ActivityLog.objects.create(action = f'Administratorul {administrator_name} a schimbat grupul utilizatorului {user}.')
     messages.success(request, f"Utilizatorul a fost adăugat în {group_name} și {department_group_name}!")
     user.save()
 
@@ -101,6 +129,9 @@ def delete_all_users_notes(request):
             students = User.objects.filter(groups=student_group)
             students.delete()
             messages.success(request, 'All students deleted successfully.')
+
+            administrator_name = request.user.username
+            ActivityLog.objects.create(action = f'Administratorul {administrator_name} a șters toate cererile și studenții.')
 
         except Group.DoesNotExist:
             messages.error(request, 'The "student" group does not exist.')
@@ -120,6 +151,9 @@ def password_reset_admin(request):
             selected_user.is_active = True
             selected_user.save()
             messages.success(request, 'Parola a fost salvată cu succes!')
+
+            administrator_name = request.user.username
+            ActivityLog.objects.create(action = f'Administratorul {administrator_name} a schimbat parola utilizatorului {selected_user}.')
         else:
             messages.error(request, 'Am întâmpinat o problemă încercând să salvăm parola! Vă rugăm încercați mai târziu.')
         
@@ -146,20 +180,13 @@ def delete_user_and_notes(request, selected_user):
             # Now, delete the selected user
             selected_user.delete()
             messages.success(request, f'Utilizatorul {selected_user.username} a fost șters cu succes.')
+
+            administrator_name = request.user.username
+            ActivityLog.objects.create(action = f'Administratorul {administrator_name} a șters utilizatorul {selected_user} și cererile sale.')
     except Exception as e:
         messages.error(request, f'A apărut o problemă la ștergerea utilizatorului: {str(e)}')
 
     return redirect('home_admin')
-
-
-
-
-
-
-
-
-
-
 
 def add_department(request):
     if request.method == 'POST':
@@ -169,6 +196,8 @@ def add_department(request):
             new_department = Department(name=department_name)
             new_department.save()
             # Optionally, you can add success messages or perform other actions
+            administrator_name = request.user.username
+            ActivityLog.objects.create(action = f'Administratorul {administrator_name} a adăugat departamentul {new_department}.')
             return redirect('home_admin')  # Redirect to a relevant page after adding
 
     return render(request, 'main/home_admin.html')  # Replace 'your_template.html' with your actual template
@@ -188,26 +217,22 @@ def add_specialization(request):
                 number_of_years=int(number_of_years)
             )
             messages.success(request, 'Specializarea a fost adăugată cu succes!')
+            administrator_name = request.user.username
+            ActivityLog.objects.create(action = f'Administratorul {administrator_name} a adăugat specializarea {specialization_name} la departamentul {department}.')
             return redirect('home_admin')  # Redirect to a relevant page after adding
         else:
             messages.error(request, "A apărut o eroare! Sunteți rugați să completați toate câmpurile!")
 
     return render(request, 'main/home_admin.html')
 
-
-
-
-
-
-
-
-
-
 def set_superuser(request, selected_user):
     try:
         selected_user.is_superuser = True
         selected_user.save()
         messages.success(request, f'Utilizatorul {selected_user.username} a fost setat ca administrator.')
+
+        administrator_name = request.user.username
+        ActivityLog.objects.create(action = f'Administratorul {administrator_name} a dat utilizatorului {selected_user} drepturi de administrator.')
     except Exception as e:
         messages.error(request, f'A apărut o problemă la setarea ca administrator: {str(e)}')
 
@@ -218,6 +243,8 @@ def unset_superuser(request, selected_user):
         selected_user.is_superuser = False
         selected_user.save()
         messages.success(request, f'Utilizatorul {selected_user.username} nu mai este administrator.')
+        administrator_name = request.user.username
+        ActivityLog.objects.create(action = f'Administratorul {administrator_name} a scos drepturile de administrator ale utilizatorului {selected_user}.')
     except Exception as e:
         messages.error(request, f'A apărut o problemă la scoaterea din rolul de administrator: {str(e)}')
 

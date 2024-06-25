@@ -16,7 +16,7 @@
             align-items: center;
             justify-content: space-between; /* Space elements evenly */
             padding: 0 20px; /* Adjust padding as needed */
-            z-index: 1000; /* Ensure it's above other content */
+            z-index: 1; /* Ensure it's above other content */
         }
         .decorative-bar a, .decorative-bar span {
             color: white;
@@ -83,6 +83,15 @@
         .note-item{
             white-space: pre-wrap; /* Ensures that long lines wrap and respect line breaks */
         }
+        .modal-backdrop {
+            display: none;
+            z-index: 1040 !important;
+        }
+        
+        .modal-content {
+            margin: 2px auto;
+            z-index: 1100 !important;
+        }
     </style>
     <title>{% block title %} Pagina principala {% endblock %}</title>
 </head>
@@ -131,7 +140,7 @@
     <div class="container mt-4">
         <div class="panel">
             {% block content %}
-                {% block no_requests %} {% endblock %}
+            {% block no_requests %} {% endblock %}
             {% endblock %}
         </div>
     </div>

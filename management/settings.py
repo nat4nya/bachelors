@@ -47,14 +47,6 @@ INSTALLED_APPS = [
     'rest_framework.authtoken'
 ]
 
-# token de acces si sesiune
-JWT_AUTH = {
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=1),
-    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
-    'JWT_ALLOW_REFRESH': True,
-    'JWT_REFRESH_LEEWAY': datetime.timedelta(days=1),
-}
-
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
@@ -73,6 +65,9 @@ EMAIL_HOST_PASSWORD = 'xyashjkdjjffozwx'
 DEFAULT_FROM_EMAIL = 'noreply<no_reply@domain.com>'
 PASSWORD_RESET_TIMEOUT = 1800 # link-ul e valabil 30 de min
 
+# sa-mi ia data buna la log-uri
+TIME_ZONE = 'Europe/Bucharest'
+USE_TZ = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
