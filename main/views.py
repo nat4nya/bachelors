@@ -168,7 +168,7 @@ class CustomLoginView(LoginView):
     def is_student(self, email):
         username = email.split('@')[0]
         username_parts = username.split('.')
-        if len(username_parts) < 3:
+        if len(username_parts) != 3:
             # user-ul nu e student
             return False
         return True

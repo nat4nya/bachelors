@@ -14,9 +14,15 @@ def select_user(request, user_id):
 
 @superuser_required
 def home_admin(request):
+
+
     users = User.objects.all()
     notes = Note.objects.all()
-    selected_user_id = request.GET.get('selected_user')
+    if request.method == 'POST':
+        selected_user_id = request.POST.get('selected_user')
+    elif request.method == 'GET':
+        selected_user_id = request.GET.get('selected_user')
+    
     selected_user = User.objects.filter(id=selected_user_id).first()
     departments = Department.objects.all()
     user_filter = ''
@@ -25,6 +31,7 @@ def home_admin(request):
     if request.method == 'GET':
         user_filter = request.GET.get('user_search_query', '')  # Ensure to retrieve search_query parameter
         note_filter = request.GET.get('note_search_query', '')  # Ensure to retrieve note_search_query parameter
+        action = request.GET.get('action')
 
         if user_filter:
             users = User.objects.filter(username__icontains=user_filter)
@@ -32,18 +39,21 @@ def home_admin(request):
         if note_filter:
             notes = Note.objects.filter(title__icontains=note_filter)  # Adjust this based on your Note model fields
 
-        action = request.GET.get('action')
         if selected_user and action:
             if action == 'delete_users_notes':
                 delete_user_and_notes(request, selected_user)
-            elif action == 'change_groups_roles':
-                # Perform action 3 for selected_user
-                pass
             elif action == 'set_superuser':
                 set_superuser(request, selected_user)
             elif action == 'unset_superuser':
                 unset_superuser(request, selected_user)
             return redirect('home_admin')
+        
+    elif request.method == 'POST':
+        action = request.POST.get('action')
+        if selected_user and action == 'change_groups_roles':
+            change_user_groups(request, selected_user)
+            return redirect('home_admin')  # Redirect after processing POST request
+        
 
     context = {
         'users': users,
@@ -54,6 +64,30 @@ def home_admin(request):
         'departments': departments
     }
     return render(request, 'main/home_admin.html', context)
+
+# schimba grupurile user-ului
+def change_user_groups(request, user):
+    group_name = request.POST.get('group')
+    department_id = request.POST.get('department')
+
+    print("Group name: ", group_name)
+    print("Department id: ", department_id)
+    # Remove the user from all current groups
+    print("zi-mi ca mere te rog io")
+    user.groups.clear()
+
+    # Add the user to the selected group
+    group, created = Group.objects.get_or_create(name=group_name)
+    user.groups.add(group)
+
+    # Add the user to the department group
+    department = Department.objects.get(id=department_id)
+    department_group_name = department.name
+    department_group, created = Group.objects.get_or_create(name=department_group_name)
+    user.groups.add(department_group)
+    print("eeeeeeeeeeeeeeeeeeee")
+    messages.success(request, f"Utilizatorul a fost adăugat în {group_name} și {department_group_name}!")
+    user.save()
 
 # in curs de verificare
 def delete_all_users_notes(request):
