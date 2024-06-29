@@ -27,6 +27,7 @@ def home_admin(request):
 
     # verifica daca au fost introduse ziua si luna pentru log-uri
     if request.method == 'POST':
+        selected_user_id = request.POST.get('selected_user')
         day = request.POST.get('day')
         month = request.POST.get('month')
         if day and month:

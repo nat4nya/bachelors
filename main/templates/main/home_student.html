@@ -1,4 +1,5 @@
 {% extends 'main/base_home.html' %}
+{% load tz %}
 {% block title %} Pagina studentului {% endblock %}
 
 {% block content %}
@@ -30,7 +31,7 @@
               <strong>Profesor:</strong> {{ notification.note.destination.username }}<br>
               <strong>Titlul cererii:</strong> {{ notification.note.title }}<br>
               <strong>Descriere:</strong> {{ notification.note.description }}<br>
-              <strong>Data:</strong> {{ notification.note.created_at }}<br>
+              <strong>Data:</strong> {{ notification.note.created_at|timezone:"Europe/Bucharest"|date:"Y-m-d H:i:s" }}<br>
               {% if notification.reason %}
                 <strong>Motiv:</strong> {{ notification.reason }}<br>
               {% endif %}

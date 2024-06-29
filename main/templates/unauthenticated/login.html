@@ -4,6 +4,14 @@
 {% load crispy_forms_tags %}
 
 {% block inner_panel_content %}
+    <label style="color: red; font-size: 15px; font-weight: bold;">
+        Numele de utilizator este prima parte a adresei de e-mail cu care s-a făcut înregistrarea! <br>
+        De exemplu, la adresa de e-mail
+        <span style = "color: black"> nume.prenume@uab.ro </span>
+        , numele de utilizator este
+        <span style = "color: black"> nume.prenume </span>
+        !
+    </label>
     <form method="post">
         {% csrf_token %} 
         <!-- Form pentru autentificare -->

@@ -182,10 +182,10 @@
                                     <td>{{ user.id }}</td>
                                     <td>{{ user.username }}</td>
                                     <td>{{ user.email }}</td>
-                                    <td>{{ user.last_login }}</td>
+                                    <td>{{ user.last_login|timezone:"Europe/Bucharest"|date:"Y-m-d H:i:s" }}</td>
                                     <td>{{ user.is_superuser }}</td>
                                     <td>{{ user.is_active }}</td>
-                                    <td>{{ user.date_joined }}</td>
+                                    <td>{{ user.date_joined|timezone:"Europe/Bucharest"|date:"Y-m-d H:i:s" }}</td>
                                     <td>
                                         {% for group in user.groups.all %}
                                             {{ group.name }}

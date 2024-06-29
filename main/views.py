@@ -271,6 +271,9 @@ def sign_up(request):
             user = form.save(commit=False)
             user.is_active = False # contul se salveaza ca fiind inactiv pana se activeaza prin e-mail
             email = form.cleaned_data.get('email')
+            # modificat! user-ul nu-si mai introduce e-mail la register, ci este luata prima parte din email si salvata ca username
+            username = email.split('@')[0]
+            user.username = username
             user.save()
 
             is_student_email(request, email, user)
@@ -465,7 +468,7 @@ def accept_note(request, note_id):
             student_name = request.author.username
             ActivityLog.objects.create(action = f'Profesorul {professor_name} a acceptat cererea studentului {student_name}.')
 
-    return redirect('home_professor')  # Redirect back to the professor's home page
+    return redirect('home_professor')
 
 # CERERI DE LICENTA/DISERATIE
 # crearea cererii
@@ -552,7 +555,7 @@ def refuse_all_requests(request):
         notes_to_refuse.update(is_refused=True)
 
         professor_name = request.user.username
-        ActivityLog.objects.create(action = f'Profesorul {professor_name} a refuzat toate cererile de licență.')
+        ActivityLog.objects.create(action = f'Profesorul {professor_name} a refuzat toate cererile.')
     except Exception as e:
         messages.error(request, f"A apărut o eroare în timpul refuzării tuturor cererilor: {str(e)}")
 
@@ -568,7 +571,7 @@ def remove_myself(request):
             professor_request = ProfessorRequest.objects.get(professor=request.user)
             professor_request.no_requests = True
             professor_request.save()
-            messages.success(request, "Nu vei mai primi cereri de licență!")
+            messages.success(request, "Nu vei mai primi cereri!")
 
             professor_name = request.user.username
             ActivityLog.objects.create(action = f'Profesorul {professor_name} nu va mai primi cereri.')
@@ -586,7 +589,7 @@ def add_myself(request):
             professor_request = ProfessorRequest.objects.get(professor=request.user)
             professor_request.no_requests = False
             professor_request.save()
-            messages.success(request, "Vei primi de acum cereri de licență!")
+            messages.success(request, "Vei primi de acum cereri!")
 
             professor_name = request.user.username
             ActivityLog.objects.create(action = f'Profesorul {professor_name} va primi cereri.')
